@@ -6,9 +6,8 @@ namespace Crell\KernelBench\Documents;
 
 class Product
 {
-    public readonly string $id;
-
     public function __construct(
+        public int $id,
         public string $name,
         public string $color,
         public float $price,

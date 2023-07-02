@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Psr15;
+namespace Crell\KernelBench\Events\Listeners;
 
 use Crell\KernelBench\Documents\User;
+use Crell\KernelBench\Errors\PermissionDenied;
+use Crell\KernelBench\Events\Events\PostRouting;
 use Crell\KernelBench\Services\Authorization\UserAuthorizer;
 use Crell\KernelBench\Services\Routing\RouteResult;
 use Crell\KernelBench\Services\Routing\RouteSuccess;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\MiddlewareInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 
-readonly class AuthorizationMiddleware implements MiddlewareInterface
+readonly class AuthorizeRequest
 {
     public function __construct(
         private UserAuthorizer $authorizer,
     ) {}
 
-    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    public function __invoke(PostRouting $event): void
     {
+        $request = $event->request();
+
         /** @var RouteSuccess $routeResult */
         $routeResult = $request->getAttribute(RouteResult::class);
 
@@ -29,14 +29,12 @@ readonly class AuthorizationMiddleware implements MiddlewareInterface
 
         $permission = $routeResult?->permission;
 
-        // Success just goes through the stack.
+        // Success does nothing.
         if ($this->authorizer->userMay($user, $permission)) {
-            return $handler->handle($request);
+            return;
         }
 
-        // Failure needs handling.
-
-
+        // Just mark the error.  It's now someone else's job.
+        $event->setError(new PermissionDenied($request, $user, $permission));
     }
-
 }

@@ -6,7 +6,8 @@
         "psr/http-server-handler": "^1.0",
         "psr/http-server-middleware": "^1.0",
         "psr/event-dispatcher": "^1.0",
-        "crell/api-problem": "^3.6"
+        "crell/api-problem": "^3.6",
+        "psr/simple-cache": "^3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.1",

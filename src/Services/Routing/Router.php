@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Services\Routing;
 
+use Crell\KernelBench\Documents\Product;
 use Crell\KernelBench\Services\Actions\ProductCreate;
 use Crell\KernelBench\Services\Actions\ProductGet;
 use Crell\KernelBench\Services\Actions\StaticPath;
@@ -20,22 +21,23 @@ class Router
                 'get' => new RouteSuccess(
                     action: StaticPath::class,
                     method: 'GET',
-                    parameters: [],
+                    vars: [],
                 ),
             ],
             '/product/1' => [
                 'get' => new RouteSuccess(
                     action: ProductGet::class,
                     method: 'GET',
-                    parameters: ['product' => 1],
+                    parameters: ['product' => Product::class],
+                    vars: ['product' => 1],
                 ),
             ],
             '/product' => [
                 'post' => new RouteSuccess(
                     action: ProductCreate::class,
                     method: 'POST',
-                    parameters: [],
                     permission: 'create',
+                    vars: [],
                 ),
             ],
         ];

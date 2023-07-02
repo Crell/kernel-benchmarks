@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Errors;
 
-use Crell\KernelBench\Services\Routing\RouteResult;
+use Crell\KernelBench\Documents\User;
 use Psr\Http\Message\ServerRequestInterface;
 
-readonly class NotFound implements Error
+readonly class PermissionDenied implements Error
 {
     public function __construct(
         public ServerRequestInterface $request,
-        public RouteResult $routeResult,
+        public User $user,
+        public string $permission,
     ) {}
 }

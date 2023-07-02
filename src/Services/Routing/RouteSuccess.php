@@ -7,15 +7,18 @@ namespace Crell\KernelBench\Services\Routing;
 readonly class RouteSuccess extends RouteResult
 {
     /**
+     * @param array<string, string> $parameters
+     *   A map of parameters to the action, keyed by name, with their type as the value.
      * @param array<string, mixed> $vars
      *   The placeholder arguments extracted from the route path.
+     *
      */
     public function __construct(
         public string $action,
         public string $method,
-        public array $parameters,
-        public array $vars = [],
         public ?string $permission = null,
+        public array $parameters = [],
+        public array $vars = [],
     ) {}
 
     /**
@@ -26,9 +29,9 @@ readonly class RouteSuccess extends RouteResult
         return new self(
             action: $this->action,
             method: $this->method,
+            permission: $this->permission,
             parameters: $this->parameters,
             vars: $vars + $this->vars,
-            permission: $this->permission,
         );
     }
 }
