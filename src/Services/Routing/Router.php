@@ -35,6 +35,7 @@ class Router
                     action: ProductCreate::class,
                     method: 'POST',
                     parameters: [],
+                    permission: 'create',
                 ),
             ],
         ];

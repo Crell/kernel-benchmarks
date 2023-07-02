@@ -15,6 +15,7 @@ readonly class RouteSuccess extends RouteResult
         public string $method,
         public array $parameters,
         public array $vars = [],
+        public ?string $permission = null,
     ) {}
 
     /**
@@ -27,6 +28,7 @@ readonly class RouteSuccess extends RouteResult
             method: $this->method,
             parameters: $this->parameters,
             vars: $vars + $this->vars,
+            permission: $this->permission,
         );
     }
 }

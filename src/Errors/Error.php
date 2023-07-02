@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Monad\Errors;
+namespace Crell\KernelBench\Errors;
 
 interface Error
 {
