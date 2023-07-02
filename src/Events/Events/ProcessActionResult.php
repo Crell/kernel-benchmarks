@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Events\Events;
 
 use Psr\EventDispatcher\StoppableEventInterface;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class ProcessActionResult implements StoppableEventInterface, CarriesResponse, CarriesError
 {
@@ -13,8 +13,8 @@ class ProcessActionResult implements StoppableEventInterface, CarriesResponse, C
     use ErrorCarrier;
 
     public function __construct(
-        public readonly mixed $result,
-        public readonly RequestInterface $request,
+        public mixed $result,
+        public readonly ServerRequestInterface $request,
     ) {}
 
     public function isPropagationStopped(): bool
