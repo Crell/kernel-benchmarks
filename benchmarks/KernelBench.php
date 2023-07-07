@@ -9,7 +9,6 @@ use Crell\KernelBench\Monad\MonadicKernel;
 use Crell\KernelBench\Services\ClassFinder;
 use Crell\KernelBench\Services\EventDispatcher\Provider;
 use Crell\Tukio\Dispatcher;
-use DI\Container;
 use DI\ContainerBuilder;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
@@ -31,7 +30,6 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use function DI\autowire;
-use function DI\create;
 use function DI\get;
 
 /**
@@ -50,10 +48,18 @@ class KernelBench
     private readonly ContainerInterface $container;
 
     private ServerRequestInterface $staticRouteRequest;
+    private ServerRequestInterface $productGetRequest;
+    private ServerRequestInterface $productCreateRequest;
 
     public function setupRequests(): void
     {
         $this->staticRouteRequest = new ServerRequest('GET', '/static/path', ['accept' => 'text/html']);
+        $this->productGetRequest = new ServerRequest('GET', '/product/1', ['accept' => 'text/html']);
+        $this->productCreateRequest = (new ServerRequest(
+            'POST',
+            '/product',
+            ['accept' => 'text/html', 'content-type' => 'application/json']
+        ))->withBody($this->container->get(StreamFactoryInterface::class)->createStream('{"name":"Beep","color": "Blue","price": 9.99}'));
     }
 
     public function setupContainer(): void
@@ -115,7 +121,22 @@ class KernelBench
         $kernel = $this->container->get(EventKernel::class);
 
         $response = $kernel->handle($this->staticRouteRequest);
+    }
 
+    public function bench_event_get_product(): void
+    {
+        /** @var EventKernel $kernel */
+        $kernel = $this->container->get(EventKernel::class);
+
+        $response = $kernel->handle($this->productGetRequest);
+    }
+
+    public function bench_event_create_product(): void
+    {
+        /** @var EventKernel $kernel */
+        $kernel = $this->container->get(EventKernel::class);
+
+        $response = $kernel->handle($this->productCreateRequest);
     }
 
     public function tearDown(): void {}
