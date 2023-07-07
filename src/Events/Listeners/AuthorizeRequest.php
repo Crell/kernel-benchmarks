@@ -29,6 +29,11 @@ readonly class AuthorizeRequest
 
         $permission = $routeResult?->permission;
 
+        // If there's no permission requirement, fail open. Bad, but meh.
+        if (!$permission) {
+            return;
+        }
+
         // Success does nothing.
         if ($this->authorizer->userMay($user, $permission)) {
             return;

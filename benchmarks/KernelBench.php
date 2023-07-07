@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Benchmarks;
 
-use Crell\AttributeUtils\Analyzer;
-use Crell\AttributeUtils\MemoryCacheAnalyzer;
-use Crell\EnvBench\Environment;
-use Crell\EnvBench\EnvironmentNoFolding;
-use Crell\EnvBench\EnvironmentPhpNames;
-use Crell\EnvBench\ManualMap;
-use Crell\EnvMapper\EnvMapper;
+use Crell\KernelBench\Events\EventKernel;
 use Crell\KernelBench\Monad\MonadicKernel;
-use Crell\Serde\Formatter\ArrayFormatter;
-use Crell\Serde\SerdeCommon;
+use Crell\KernelBench\Services\ClassFinder;
+use Crell\KernelBench\Services\EventDispatcher\Provider;
+use Crell\Tukio\Dispatcher;
+use DI\Container;
+use DI\ContainerBuilder;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7\ServerRequest;
 use PhpBench\Benchmark\Metadata\Annotations\AfterMethods;
 use PhpBench\Benchmark\Metadata\Annotations\BeforeMethods;
 use PhpBench\Benchmark\Metadata\Annotations\Iterations;
@@ -21,72 +20,103 @@ use PhpBench\Benchmark\Metadata\Annotations\OutputTimeUnit;
 use PhpBench\Benchmark\Metadata\Annotations\RetryThreshold;
 use PhpBench\Benchmark\Metadata\Annotations\Revs;
 use PhpBench\Benchmark\Metadata\Annotations\Warmup;
+use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface;
+use Psr\Http\Message\RequestFactoryInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use function DI\autowire;
+use function DI\create;
+use function DI\get;
 
 /**
  * @Revs(100)
  * @Iterations(10)
  * @Warmup(2)
- * @BeforeMethods({"setUpMonadicKernel"})
+ * @BeforeMethods({"setupContainer", "setupListeners", "setupRequests"})
  * @AfterMethods({"tearDown"})
  * @OutputTimeUnit("milliseconds", precision=4)
  * @RetryThreshold(10.0)
  */
 class KernelBench
 {
-
     private readonly MonadicKernel $monadicKernel;
+
+    private readonly ContainerInterface $container;
+
+    private ServerRequestInterface $staticRouteRequest;
+
+    public function setupRequests(): void
+    {
+        $this->staticRouteRequest = new ServerRequest('GET', '/static/path', ['accept' => 'text/html']);
+    }
+
+    public function setupContainer(): void
+    {
+        $containerBuilder = new ContainerBuilder();
+        $containerBuilder->useAutowiring(true);
+
+        $finder = new ClassFinder();
+
+        $containerBuilder->addDefinitions([
+            EventKernel::class => autowire(),
+            NullLogger::class => autowire(),
+            Dispatcher::class => autowire(),
+            Provider::class => autowire(),
+            ListenerProviderInterface::class => get(Provider::class),
+            EventDispatcherInterface::class => get(Dispatcher::class),
+            LoggerInterface::class => get(NullLogger::class),
+            ResponseFactoryInterface::class => get(Psr17Factory::class),
+            StreamFactoryInterface::class => get(Psr17Factory::class),
+            RequestFactoryInterface::class => get(Psr17Factory::class),
+            ServerRequestFactoryInterface::class => get(Psr17Factory::class),
+        ]);
+        $paths = [
+            './src/Services',
+            './src/Events/Listeners',
+            './src/Psr15',
+        ];
+
+        foreach ($paths as $path) {
+            foreach ($finder->find($path) as $class) {
+                $containerBuilder->addDefinitions([
+                    $class => autowire(),
+                ]);
+            }
+        }
+
+        $this->container = $containerBuilder->build();
+    }
+
+    public function setupListeners(): void
+    {
+        /** @var Provider $provider */
+        $provider = $this->container->get(Provider::class);
+
+        $finder = new ClassFinder();
+
+        foreach ($finder->find('./src/Events/Listeners') as $class) {
+            $provider->addSelfCallingListener($class);
+        }
+    }
 
     public function setUpMonadicKernel(): void
     {
-        $kernel = new MonadicKernel();
+    }
 
-        $this->monadicKernel = $kernel;
+    public function bench_event_staticroute(): void
+    {
+        /** @var EventKernel $kernel */
+        $kernel = $this->container->get(EventKernel::class);
+
+        $response = $kernel->handle($this->staticRouteRequest);
+
     }
 
     public function tearDown(): void {}
-
-
-    public function bench_serde_using_field_rename(): void
-    {
-        /** @var Environment $env */
-        $env = $this->serde->deserialize($_ENV, from: 'array', to: Environment::class);
-    }
-
-    public function bench_serde_using_manual_rename(): void
-    {
-        $envArray = array_combine(
-            array_map(strtolower(...), array_keys($_ENV)),
-            $_ENV,
-        );
-
-        $env = $this->serde->deserialize($envArray, from: 'array', to: EnvironmentNoFolding::class);
-    }
-
-    public function bench_manual_map_using_manual_rename(): void
-    {
-        $envArray = array_combine(
-            array_map(strtolower(...), array_keys($_ENV)),
-            $_ENV,
-        );
-
-        $env = $this->manualMapper->map($envArray, Environment::class);
-    }
-
-    public function bench_manual_map_using_auto_rename(): void
-    {
-        /** @var EnvironmentPhpNames $env */
-        $env = $this->manualMapper->mapDynamicCaseFolding($_ENV, EnvironmentPhpNames::class);
-    }
-
-    public function bench_manual_map_using_auto_rename_optimized(): void
-    {
-        /** @var EnvironmentPhpNames $env */
-        $env = $this->manualMapper->mapDynamicCaseFoldingOptimized($_ENV, EnvironmentPhpNames::class);
-    }
-
-    public function bench_envmapper(): void
-    {
-        /** @var EnvironmentPhpNames $env */
-        $env = $this->manualMapper->mapDynamicCaseFoldingOptimized($_ENV, EnvironmentPhpNames::class);
-    }
 }

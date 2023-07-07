@@ -10,5 +10,5 @@ interface CarriesError
 {
     public function setError(Error $error): static;
 
-    public function getError(): Error;
+    public function getError(): ?Error;
 }

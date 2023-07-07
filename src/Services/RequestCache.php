@@ -27,7 +27,7 @@ class RequestCache
         $key = [
             $request->getUri()->getHost(),
             $request->getUri()->getPath(),
-            $request->getHeader('accept'),
+            $request->getHeader('accept')[0],
         ];
 
         return implode(':', $key);

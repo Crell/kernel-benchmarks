@@ -40,6 +40,7 @@ readonly class EventKernel implements RequestHandlerInterface
         $request = $event->request();
 
         $routingResult = $this->router->route($request);
+        $request = $request->withAttribute(RouteResult::class, $routingResult);
 
         /** @var RoutingResult $event */
         $event = $this->dispatcher->dispatch(new RoutingResult($request, $routingResult));

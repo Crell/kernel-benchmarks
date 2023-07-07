@@ -16,8 +16,8 @@ trait ErrorCarrier
         return $this;
     }
 
-    public function getError(): Error
+    public function getError(): ?Error
     {
-        return $this->error;
+        return $this->error ?? null;
     }
 }
