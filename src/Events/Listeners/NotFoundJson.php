@@ -7,7 +7,7 @@ namespace Crell\KernelBench\Events\Listeners;
 use Crell\ApiProblem\ApiProblem;
 use Crell\ApiProblem\HttpConverter;
 use Crell\KernelBench\Errors\NotFound;
-use Crell\KernelBench\Events\Events\ProcessActionResult;
+use Crell\KernelBench\Events\Events\HandleError;
 use Crell\KernelBench\Services\Routing\RequestFormat;
 
 readonly class NotFoundJson
@@ -16,18 +16,18 @@ readonly class NotFoundJson
         private HttpConverter $converter,
     ) {}
 
-    public function __invoke(ProcessActionResult $event): void
+    public function __invoke(HandleError $event): void
     {
-        if (!$this->accepts($event)) {
+        if ($this->accepts($event)) {
             $problem = (new ApiProblem('Not Found'))
                 ->setStatus(404);
             $event->setResponse($this->converter->toJsonResponse($problem));
         }
     }
 
-    private function accepts(ProcessActionResult $event): bool
+    private function accepts(HandleError $event): bool
     {
-        return $event->result instanceof NotFound
+        return $event->error instanceof NotFound
             && $event->request->getAttribute(RequestFormat::class)->accept === 'json';
     }
 }

@@ -8,6 +8,7 @@ use Crell\KernelBench\Documents\Message;
 use Crell\KernelBench\Events\Events\ProcessActionResult;
 use Crell\KernelBench\Services\Routing\RequestFormat;
 use Crell\KernelBench\Services\Template;
+use Crell\Tukio\ListenerBefore;
 
 readonly class HtmlMessageResult
 {
@@ -15,9 +16,10 @@ readonly class HtmlMessageResult
         private Template $template,
     ) {}
 
+    #[ListenerBefore(HtmlStringResult::class)]
     public function __invoke(ProcessActionResult $event): void
     {
-        if (!$this->accepts($event)) {
+        if ($this->accepts($event)) {
             $event->result = $this->template->render('message');
         }
     }

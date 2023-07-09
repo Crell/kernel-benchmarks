@@ -7,23 +7,28 @@ namespace Crell\KernelBench\Events\Listeners;
 use Crell\KernelBench\Events\Events\ProcessActionResult;
 use Crell\KernelBench\Services\ResponseBuilder;
 use Crell\KernelBench\Services\Routing\RequestFormat;
+use Crell\Tukio\ListenerPriority;
 
-readonly class HtmlStringResult
+/**
+ * Generically handle any JSON object that hasn't already been customized.
+ */
+readonly class JsonResult
 {
     public function __construct(
         private ResponseBuilder $responseBuilder,
     ) {}
 
+    #[ListenerPriority(priority: -100)]
     public function __invoke(ProcessActionResult $event): void
     {
         if ($this->accepts($event)) {
-            $event->setResponse($this->responseBuilder->ok($event->result, 'text/html'));
+            $response = $this->responseBuilder->ok(json_encode($event->result, JSON_THROW_ON_ERROR), 'application/json');
+            $event->setResponse($response);
         }
     }
 
     private function accepts(ProcessActionResult $event): bool
     {
-        return is_string($event->result)
-            && $event->request->getAttribute(RequestFormat::class)->accept === 'html';
+        return $event->request->getAttribute(RequestFormat::class)->accept === 'json';
     }
 }

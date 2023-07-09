@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Events\Listeners;
 
 use Crell\KernelBench\Errors\MethodNotAllowed;
-use Crell\KernelBench\Events\Events\ProcessActionResult;
+use Crell\KernelBench\Events\Events\HandleError;
 use Crell\KernelBench\Services\ResponseBuilder;
 use Crell\KernelBench\Services\Routing\RequestFormat;
 use Crell\KernelBench\Services\Template;
@@ -17,17 +17,17 @@ readonly class MethodNotAllowedHtml
         private ResponseBuilder $responseBuilder,
     ) {}
 
-    public function __invoke(ProcessActionResult $event): void
+    public function __invoke(HandleError $event): void
     {
-        if (!$this->accepts($event)) {
+        if ($this->accepts($event)) {
             $body = $this->template->render('method_not_allowed');
             $event->setResponse($this->responseBuilder->createResponse(405, $body, 'text/html'));
         }
     }
 
-    private function accepts(ProcessActionResult $event): bool
+    private function accepts(HandleError $event): bool
     {
-        return $event->result instanceof MethodNotAllowed
+        return $event->error instanceof MethodNotAllowed
             && $event->request->getAttribute(RequestFormat::class)->accept === 'html';
     }
 }

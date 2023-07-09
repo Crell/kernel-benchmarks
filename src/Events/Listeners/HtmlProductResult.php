@@ -17,7 +17,7 @@ readonly class HtmlProductResult
 
     public function __invoke(ProcessActionResult $event): void
     {
-        if (!$this->accepts($event)) {
+        if ($this->accepts($event)) {
             $event->result = $this->template->render('product');
         }
     }

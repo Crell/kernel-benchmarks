@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Events;
 
 use Crell\KernelBench\Errors\Error;
+use Crell\KernelBench\Errors\NoResultHandlerFound;
+use Crell\KernelBench\Events\Events\HandleError;
 use Crell\KernelBench\Events\Events\HandleResponse;
 use Crell\KernelBench\Events\Events\PostRouting;
 use Crell\KernelBench\Events\Events\PreRouting;
@@ -68,10 +70,14 @@ readonly class EventKernel implements RequestHandlerInterface
         if (! $result instanceof ResponseInterface) {
             /** @var ProcessActionResult $event */
             $event = $this->dispatcher->dispatch(new ProcessActionResult($result, $request));
-            $result = $event->getResponse();
+            $response = $event->getResponse();
+            if (!$response instanceof ResponseInterface) {
+                return $this->handleError(new NoResultHandlerFound($request, $result), $event->request);
+            }
+            $result = $response;
         }
 
-        /** @var ProcessActionResult $event */
+        /** @var HandleResponse $event */
         $event = $this->dispatcher->dispatch(new HandleResponse($result, $request));
 
         return $event->getResponse();
@@ -80,7 +86,7 @@ readonly class EventKernel implements RequestHandlerInterface
     private function handleError(Error $error, ServerRequestInterface $request): ResponseInterface
     {
         /** @var ProcessActionResult $event */
-        $event = $this->dispatcher->dispatch(new ProcessActionResult($error, $request));
+        $event = $this->dispatcher->dispatch(new HandleError($error, $request));
         return $event->getResponse();
     }
 

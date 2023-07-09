@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Events\Listeners;
 
 use Crell\KernelBench\Errors\PermissionDenied;
-use Crell\KernelBench\Events\Events\ProcessActionResult;
+use Crell\KernelBench\Events\Events\HandleError;
 use Crell\KernelBench\Services\ResponseBuilder;
 use Crell\KernelBench\Services\Routing\RequestFormat;
 use Crell\KernelBench\Services\Template;
@@ -17,7 +17,7 @@ readonly class PermissionDeniedHtml
         private ResponseBuilder $responseBuilder,
     ) {}
 
-    public function __invoke(ProcessActionResult $event): void
+    public function __invoke(HandleError $event): void
     {
         if ($this->accepts($event)) {
             $body = $this->template->render('permission_denied');
@@ -25,9 +25,9 @@ readonly class PermissionDeniedHtml
         }
     }
 
-    private function accepts(ProcessActionResult $event): bool
+    private function accepts(HandleError $event): bool
     {
-        return $event->result instanceof PermissionDenied
+        return $event->error instanceof PermissionDenied
             && $event->request->getAttribute(RequestFormat::class)->accept === 'html';
     }
 }
