@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Events\Listeners;
+namespace Crell\KernelBench\Events\Listeners\Response;
 
 use Crell\KernelBench\Events\Events\HandleResponse;
 use Crell\KernelBench\Services\RequestCache;
 
-class CacheRecord
+readonly class CacheRecord
 {
     public function __construct(
         private RequestCache $cache,

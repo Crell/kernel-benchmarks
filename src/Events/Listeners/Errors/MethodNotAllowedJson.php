@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Events\Listeners;
+namespace Crell\KernelBench\Events\Listeners\Errors;
 
 use Crell\ApiProblem\ApiProblem;
 use Crell\ApiProblem\HttpConverter;
-use Crell\KernelBench\Errors\NotFound;
+use Crell\KernelBench\Errors\MethodNotAllowed;
 use Crell\KernelBench\Events\Events\HandleError;
 use Crell\KernelBench\Services\Routing\RequestFormat;
 
-readonly class NotFoundJson
+readonly class MethodNotAllowedJson
 {
     public function __construct(
         private HttpConverter $converter,
@@ -19,15 +19,15 @@ readonly class NotFoundJson
     public function __invoke(HandleError $event): void
     {
         if ($this->accepts($event)) {
-            $problem = (new ApiProblem('Not Found'))
-                ->setStatus(404);
+            $problem = (new ApiProblem('Method Not Allowed'))
+                ->setStatus(405);
             $event->setResponse($this->converter->toJsonResponse($problem));
         }
     }
 
     private function accepts(HandleError $event): bool
     {
-        return $event->error instanceof NotFound
+        return $event->error instanceof MethodNotAllowed
             && $event->request->getAttribute(RequestFormat::class)->accept === 'json';
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Events\Listeners;
+namespace Crell\KernelBench\Events\Listeners\PostRouting;
 
 use Crell\KernelBench\Documents\User;
 use Crell\KernelBench\Errors\PermissionDenied;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Events\Listeners;
+namespace Crell\KernelBench\Events\Listeners\Errors;
 
 use Crell\ApiProblem\ApiProblem;
 use Crell\ApiProblem\HttpConverter;

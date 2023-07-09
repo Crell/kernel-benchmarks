@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Events\Listeners;
+namespace Crell\KernelBench\Events\Listeners\PostRouting;
 
 use Crell\KernelBench\Events\Events\PostRouting;
 use Crell\KernelBench\Services\ParamConverter;

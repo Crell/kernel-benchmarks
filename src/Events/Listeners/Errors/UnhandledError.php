@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Events\Listeners;
+namespace Crell\KernelBench\Events\Listeners\Errors;
 
 use Crell\KernelBench\Events\Events\HandleError;
 use Crell\KernelBench\Services\ResponseBuilder;

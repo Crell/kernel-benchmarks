@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Events\Listeners;
+namespace Crell\KernelBench\Events\Listeners\PreRouting;
 
 use Crell\KernelBench\Events\Events\PreRouting;
 use Psr\Log\LoggerInterface;
