@@ -2,7 +2,7 @@ name: kernel-benchmarks
 recipe: lamp
 config:
   webroot: public
-  php: '8.1'
+  php: '8.2'
   xdebug: 'develop,debug'
 services:
   appserver:
@@ -13,9 +13,7 @@ services:
         XDEBUG_SESSION_START: lando-xdebug
     build_as_root:
       - rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && /etc/init.d/apache2 reload
-  database:
-    type: postgres:14
-    portforward: true
+  database: false
 
 tooling:
   xdebug-on:
