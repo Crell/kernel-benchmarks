@@ -8,8 +8,8 @@ use Crell\KernelBench\Documents\User;
 use Crell\KernelBench\Errors\PermissionDenied;
 use Crell\KernelBench\Events\Events\PostRouting;
 use Crell\KernelBench\Services\Authorization\UserAuthorizer;
-use Crell\KernelBench\Services\Routing\RouteResult;
-use Crell\KernelBench\Services\Routing\RouteSuccess;
+use Crell\KernelBench\Services\Router\RouteResult;
+use Crell\KernelBench\Services\Router\RouteSuccess;
 
 readonly class AuthorizeRequest
 {

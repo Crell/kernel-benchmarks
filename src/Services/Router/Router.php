@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Services\Routing;
+namespace Crell\KernelBench\Services\Router;
 
 use Crell\KernelBench\Documents\Product;
 use Crell\KernelBench\Services\Actions\ProductCreate;

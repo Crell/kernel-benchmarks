@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Psr15;
 
 use Crell\KernelBench\Services\FormatDeriver;
-use Crell\KernelBench\Services\Routing\RequestFormat;
+use Crell\KernelBench\Services\Router\RequestFormat;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;

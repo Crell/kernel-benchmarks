@@ -6,7 +6,7 @@ namespace Crell\KernelBench\Events\Listeners\PreRouting;
 
 use Crell\KernelBench\Events\Events\PreRouting;
 use Crell\KernelBench\Services\FormatDeriver;
-use Crell\KernelBench\Services\Routing\RequestFormat;
+use Crell\KernelBench\Services\Router\RequestFormat;
 
 readonly class DeriveRequestFormats
 {

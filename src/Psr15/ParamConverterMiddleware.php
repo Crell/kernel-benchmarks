@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Psr15;
 
 use Crell\KernelBench\Services\ParamConverter;
-use Crell\KernelBench\Services\Routing\RouteResult;
-use Crell\KernelBench\Services\Routing\RouteSuccess;
+use Crell\KernelBench\Services\Router\RouteResult;
+use Crell\KernelBench\Services\Router\RouteSuccess;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;

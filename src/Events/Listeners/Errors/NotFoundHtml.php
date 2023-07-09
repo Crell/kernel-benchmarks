@@ -7,7 +7,7 @@ namespace Crell\KernelBench\Events\Listeners\Errors;
 use Crell\KernelBench\Errors\NotFound;
 use Crell\KernelBench\Events\Events\HandleError;
 use Crell\KernelBench\Services\ResponseBuilder;
-use Crell\KernelBench\Services\Routing\RequestFormat;
+use Crell\KernelBench\Services\Router\RequestFormat;
 use Crell\KernelBench\Services\Template;
 
 readonly class NotFoundHtml

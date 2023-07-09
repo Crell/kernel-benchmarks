@@ -8,7 +8,7 @@ use Crell\ApiProblem\ApiProblem;
 use Crell\KernelBench\Errors\MethodNotAllowed;
 use Crell\KernelBench\Errors\NotFound;
 use Crell\KernelBench\Services\ResponseBuilder;
-use Crell\KernelBench\Services\Routing\RequestFormat;
+use Crell\KernelBench\Services\Router\RequestFormat;
 use Crell\KernelBench\Services\Template;
 use Nyholm\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;

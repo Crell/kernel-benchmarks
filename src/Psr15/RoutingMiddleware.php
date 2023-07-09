@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Psr15;
 
 use Crell\KernelBench\Services\ResponseBuilder;
-use Crell\KernelBench\Services\Routing\RouteMethodNotAllowed;
-use Crell\KernelBench\Services\Routing\RouteNotFound;
-use Crell\KernelBench\Services\Routing\Router;
-use Crell\KernelBench\Services\Routing\RouteResult;
-use Crell\KernelBench\Services\Routing\RouteSuccess;
+use Crell\KernelBench\Services\Router\RouteMethodNotAllowed;
+use Crell\KernelBench\Services\Router\RouteNotFound;
+use Crell\KernelBench\Services\Router\Router;
+use Crell\KernelBench\Services\Router\RouteResult;
+use Crell\KernelBench\Services\Router\RouteSuccess;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;

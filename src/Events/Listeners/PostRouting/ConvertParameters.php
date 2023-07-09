@@ -6,8 +6,8 @@ namespace Crell\KernelBench\Events\Listeners\PostRouting;
 
 use Crell\KernelBench\Events\Events\PostRouting;
 use Crell\KernelBench\Services\ParamConverter;
-use Crell\KernelBench\Services\Routing\RouteResult;
-use Crell\KernelBench\Services\Routing\RouteSuccess;
+use Crell\KernelBench\Services\Router\RouteResult;
+use Crell\KernelBench\Services\Router\RouteSuccess;
 
 readonly class ConvertParameters
 {

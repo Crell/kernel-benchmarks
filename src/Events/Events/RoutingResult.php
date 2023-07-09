@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Events\Events;
 
-use Crell\KernelBench\Services\Routing\RouteResult;
+use Crell\KernelBench\Services\Router\RouteResult;
 use Psr\EventDispatcher\StoppableEventInterface;
 use Psr\Http\Message\ServerRequestInterface;
 

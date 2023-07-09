@@ -8,7 +8,7 @@ use Crell\ApiProblem\ApiProblem;
 use Crell\ApiProblem\HttpConverter;
 use Crell\KernelBench\Errors\MethodNotAllowed;
 use Crell\KernelBench\Events\Events\HandleError;
-use Crell\KernelBench\Services\Routing\RequestFormat;
+use Crell\KernelBench\Services\Router\RequestFormat;
 
 readonly class MethodNotAllowedJson
 {

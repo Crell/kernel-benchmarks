@@ -6,7 +6,7 @@ namespace Crell\KernelBench\Events\Listeners\ProcessResult;
 
 use Crell\KernelBench\Events\Events\ProcessActionResult;
 use Crell\KernelBench\Services\ResponseBuilder;
-use Crell\KernelBench\Services\Routing\RequestFormat;
+use Crell\KernelBench\Services\Router\RequestFormat;
 use Crell\Tukio\ListenerPriority;
 
 /**
