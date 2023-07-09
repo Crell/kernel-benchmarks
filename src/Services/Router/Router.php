@@ -9,6 +9,7 @@ use Crell\KernelBench\Services\Actions\ProductCreate;
 use Crell\KernelBench\Services\Actions\ProductGet;
 use Crell\KernelBench\Services\Actions\StaticPath;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 class Router
 {
@@ -37,6 +38,7 @@ class Router
                     action: ProductCreate::class,
                     method: 'POST',
                     permission: 'create',
+                    parameters: ['request' => ServerRequestInterface::class],
                     vars: [],
                 ),
             ],

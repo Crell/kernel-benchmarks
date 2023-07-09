@@ -97,6 +97,7 @@ class KernelBench
             './src/Services',
             './src/Events/Listeners',
             './src/Psr15',
+            './src/Monad',
         ];
 
         foreach ($paths as $path) {
@@ -128,50 +129,62 @@ class KernelBench
 
     public function bench_event_staticroute(): void
     {
-        /** @var EventKernel $kernel */
-        $kernel = $this->container->get(EventKernel::class);
-
-        $response = $kernel->handle($this->staticRouteRequest);
+        $response = $this->container->get(EventKernel::class)->handle($this->staticRouteRequest);
     }
 
     public function bench_event_get_product(): void
     {
-        /** @var EventKernel $kernel */
-        $kernel = $this->container->get(EventKernel::class);
-
-        $response = $kernel->handle($this->productGetRequest);
+        $response = $this->container->get(EventKernel::class)->handle($this->productGetRequest);
     }
 
     public function bench_event_create_product(): void
     {
-        /** @var EventKernel $kernel */
-        $kernel = $this->container->get(EventKernel::class);
-
-        $response = $kernel->handle($this->productCreateRequest);
+        $response = $this->container->get(EventKernel::class)->handle($this->productCreateRequest);
     }
 
     public function bench_event_staticroute_json(): void
     {
-        /** @var EventKernel $kernel */
-        $kernel = $this->container->get(EventKernel::class);
-
-        $response = $kernel->handle($this->staticRouteRequestJson);
+        $response = $this->container->get(EventKernel::class)->handle($this->staticRouteRequestJson);
     }
 
     public function bench_event_get_product_json(): void
     {
-        /** @var EventKernel $kernel */
-        $kernel = $this->container->get(EventKernel::class);
-
-        $response = $kernel->handle($this->productGetRequestJson);
+        $response = $this->container->get(EventKernel::class)->handle($this->productGetRequestJson);
     }
 
     public function bench_event_create_product_json(): void
     {
-        /** @var EventKernel $kernel */
-        $kernel = $this->container->get(EventKernel::class);
+        $response = $this->container->get(EventKernel::class)->handle($this->productCreateRequestJson);
+    }
 
-        $response = $kernel->handle($this->productCreateRequestJson);
+    public function bench_monad_staticroute(): void
+    {
+        $response = $this->container->get(MonadicKernel::class)->handle($this->staticRouteRequest);
+    }
+
+    public function bench_monad_get_product(): void
+    {
+        $response = $this->container->get(MonadicKernel::class)->handle($this->productGetRequest);
+    }
+
+    public function bench_monad_create_product(): void
+    {
+        $response = $this->container->get(MonadicKernel::class)->handle($this->productCreateRequest);
+    }
+
+    public function bench_monad_staticroute_json(): void
+    {
+        $response = $this->container->get(MonadicKernel::class)->handle($this->staticRouteRequestJson);
+    }
+
+    public function bench_monad_get_product_json(): void
+    {
+        $response = $this->container->get(MonadicKernel::class)->handle($this->productGetRequestJson);
+    }
+
+    public function bench_monad_create_product_json(): void
+    {
+        $response = $this->container->get(MonadicKernel::class)->handle($this->productCreateRequestJson);
     }
 
     public function tearDown(): void {}

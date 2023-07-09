@@ -41,6 +41,7 @@ readonly class EventKernel implements RequestHandlerInterface
         }
         $request = $event->request();
 
+        // This is the routing.  It's kinda hard coded, but that's OK since it's important.
         $routingResult = $this->router->route($request);
         $request = $request->withAttribute(RouteResult::class, $routingResult);
 

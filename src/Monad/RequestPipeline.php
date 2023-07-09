@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Monad;
 
-use Crell\KernelBench\Monad\Errors\Error;
+use Crell\KernelBench\Errors\Error;
 use Crell\KernelBench\Monad\Pipes\ActionPipe;
 use Crell\KernelBench\Monad\Pipes\ErrorPipe;
 use Crell\KernelBench\Monad\Pipes\RequestPipe;
 use Crell\KernelBench\Monad\Pipes\ResponsePipe;
 use Crell\KernelBench\Monad\Pipes\ResultPipe;
-use Crell\KernelBench\Monad\Router\RequestFormat;
+use Crell\KernelBench\Services\Router\RequestFormat;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
