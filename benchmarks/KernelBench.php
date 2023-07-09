@@ -50,6 +50,9 @@ class KernelBench
     private ServerRequestInterface $staticRouteRequest;
     private ServerRequestInterface $productGetRequest;
     private ServerRequestInterface $productCreateRequest;
+    private ServerRequestInterface $staticRouteRequestJson;
+    private ServerRequestInterface $productGetRequestJson;
+    private ServerRequestInterface $productCreateRequestJson;
 
     public function setupRequests(): void
     {
@@ -59,6 +62,14 @@ class KernelBench
             'POST',
             '/product',
             ['accept' => 'text/html', 'content-type' => 'application/json']
+        ))->withBody($this->container->get(StreamFactoryInterface::class)->createStream('{"name":"Beep","color": "Blue","price": 9.99}'));
+
+        $this->staticRouteRequestJson = new ServerRequest('GET', '/static/path', ['accept' => 'application/json']);
+        $this->productGetRequestJson = new ServerRequest('GET', '/product/1', ['accept' => 'application/json']);
+        $this->productCreateRequestJson = (new ServerRequest(
+            'POST',
+            '/product',
+            ['accept' => 'application/json', 'content-type' => 'application/json']
         ))->withBody($this->container->get(StreamFactoryInterface::class)->createStream('{"name":"Beep","color": "Blue","price": 9.99}'));
     }
 
@@ -137,6 +148,30 @@ class KernelBench
         $kernel = $this->container->get(EventKernel::class);
 
         $response = $kernel->handle($this->productCreateRequest);
+    }
+
+    public function bench_event_staticroute_json(): void
+    {
+        /** @var EventKernel $kernel */
+        $kernel = $this->container->get(EventKernel::class);
+
+        $response = $kernel->handle($this->staticRouteRequestJson);
+    }
+
+    public function bench_event_get_product_json(): void
+    {
+        /** @var EventKernel $kernel */
+        $kernel = $this->container->get(EventKernel::class);
+
+        $response = $kernel->handle($this->productGetRequestJson);
+    }
+
+    public function bench_event_create_product_json(): void
+    {
+        /** @var EventKernel $kernel */
+        $kernel = $this->container->get(EventKernel::class);
+
+        $response = $kernel->handle($this->productCreateRequestJson);
     }
 
     public function tearDown(): void {}
