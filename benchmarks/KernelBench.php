@@ -41,11 +41,9 @@ use function DI\get;
  * @OutputTimeUnit("milliseconds", precision=4)
  * @RetryThreshold(10.0)
  */
-class KernelBench
+abstract class KernelBench
 {
-    private readonly MonadicKernel $monadicKernel;
-
-    private readonly ContainerInterface $container;
+    protected readonly ContainerInterface $container;
 
     private ServerRequestInterface $staticRouteRequest;
     private ServerRequestInterface $productGetRequest;
@@ -127,64 +125,36 @@ class KernelBench
     {
     }
 
-    public function bench_event_staticroute(): void
+    abstract public function getKernel(): object;
+
+    public function bench_staticroute(): void
     {
-        $response = $this->container->get(EventKernel::class)->handle($this->staticRouteRequest);
+        $response = $this->getKernel()->handle($this->staticRouteRequest);
     }
 
-    public function bench_event_get_product(): void
+    public function bench_get_product(): void
     {
-        $response = $this->container->get(EventKernel::class)->handle($this->productGetRequest);
+        $response = $this->getKernel()->handle($this->productGetRequest);
     }
 
-    public function bench_event_create_product(): void
+    public function bench_create_product(): void
     {
-        $response = $this->container->get(EventKernel::class)->handle($this->productCreateRequest);
+        $response = $this->getKernel()->handle($this->productCreateRequest);
     }
 
-    public function bench_event_staticroute_json(): void
+    public function bench_staticroute_json(): void
     {
-        $response = $this->container->get(EventKernel::class)->handle($this->staticRouteRequestJson);
+        $response = $this->getKernel()->handle($this->staticRouteRequestJson);
     }
 
-    public function bench_event_get_product_json(): void
+    public function bench_get_product_json(): void
     {
-        $response = $this->container->get(EventKernel::class)->handle($this->productGetRequestJson);
+        $response = $this->getKernel()->handle($this->productGetRequestJson);
     }
 
-    public function bench_event_create_product_json(): void
+    public function bench_create_product_json(): void
     {
-        $response = $this->container->get(EventKernel::class)->handle($this->productCreateRequestJson);
-    }
-
-    public function bench_monad_staticroute(): void
-    {
-        $response = $this->container->get(MonadicKernel::class)->handle($this->staticRouteRequest);
-    }
-
-    public function bench_monad_get_product(): void
-    {
-        $response = $this->container->get(MonadicKernel::class)->handle($this->productGetRequest);
-    }
-
-    public function bench_monad_create_product(): void
-    {
-        $response = $this->container->get(MonadicKernel::class)->handle($this->productCreateRequest);
-    }
-
-    public function bench_monad_staticroute_json(): void
-    {
-        $response = $this->container->get(MonadicKernel::class)->handle($this->staticRouteRequestJson);
-    }
-
-    public function bench_monad_get_product_json(): void
-    {
-        $response = $this->container->get(MonadicKernel::class)->handle($this->productGetRequestJson);
-    }
-
-    public function bench_monad_create_product_json(): void
-    {
-        $response = $this->container->get(MonadicKernel::class)->handle($this->productCreateRequestJson);
+        $response = $this->getKernel()->handle($this->productCreateRequestJson);
     }
 
     public function tearDown(): void {}
