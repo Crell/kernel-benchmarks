@@ -24,6 +24,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -130,31 +131,50 @@ abstract class KernelBench
     public function bench_staticroute(): void
     {
         $response = $this->getKernel()->handle($this->staticRouteRequest);
+        if ($response->getStatusCode() === 500) {
+            throw new \Exception('Response was bad.');
+        }
     }
 
     public function bench_get_product(): void
     {
+        /** @var ResponseInterface $response */
         $response = $this->getKernel()->handle($this->productGetRequest);
+        if ($response->getStatusCode() === 500) {
+            throw new \Exception('Response was bad.');
+        }
     }
 
     public function bench_create_product(): void
     {
         $response = $this->getKernel()->handle($this->productCreateRequest);
+        if ($response->getStatusCode() === 500) {
+            throw new \Exception('Response was bad.');
+        }
     }
 
     public function bench_staticroute_json(): void
     {
         $response = $this->getKernel()->handle($this->staticRouteRequestJson);
+        if ($response->getStatusCode() === 500) {
+            throw new \Exception('Response was bad.');
+        }
     }
 
     public function bench_get_product_json(): void
     {
         $response = $this->getKernel()->handle($this->productGetRequestJson);
+        if ($response->getStatusCode() === 500) {
+            throw new \Exception('Response was bad.');
+        }
     }
 
     public function bench_create_product_json(): void
     {
         $response = $this->getKernel()->handle($this->productCreateRequestJson);
+        if ($response->getStatusCode() === 500) {
+            throw new \Exception('Response was bad.');
+        }
     }
 
     public function tearDown(): void {}
