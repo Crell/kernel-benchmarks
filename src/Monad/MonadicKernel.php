@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Monad;
 
 use Crell\KernelBench\Errors\NotFound;
-use Crell\KernelBench\Monad\Pipes\DeriveFormatPipe;
+use Crell\KernelBench\Events\Listeners\PostRouting\AuthorizeRequest;
+use Crell\KernelBench\Monad\Pipes\Error\HtmlNotFoundPipe;
+use Crell\KernelBench\Monad\Pipes\Error\JsonNotFoundPipe;
 use Crell\KernelBench\Monad\Pipes\HandleActionPipe;
-use Crell\KernelBench\Monad\Pipes\HtmlNotFoundPipe;
-use Crell\KernelBench\Monad\Pipes\HtmlResultPipe;
-use Crell\KernelBench\Monad\Pipes\JsonNotFoundPipe;
-use Crell\KernelBench\Monad\Pipes\JsonResultPipe;
-use Crell\KernelBench\Monad\Pipes\ParameterConverterPipe;
-use Crell\KernelBench\Monad\Pipes\RoutePipe;
+use Crell\KernelBench\Monad\Pipes\Request\AuthenticateRequestPipe;
+use Crell\KernelBench\Monad\Pipes\Request\CacheLookupPipe;
+use Crell\KernelBench\Monad\Pipes\Request\DeriveFormatPipe;
+use Crell\KernelBench\Monad\Pipes\Request\LogRequestPipe;
+use Crell\KernelBench\Monad\Pipes\Request\ParameterConverterPipe;
+use Crell\KernelBench\Monad\Pipes\Request\RoutePipe;
+use Crell\KernelBench\Monad\Pipes\Response\CacheRecordPipe;
+use Crell\KernelBench\Monad\Pipes\Result\HtmlResultPipe;
+use Crell\KernelBench\Monad\Pipes\Result\JsonResultPipe;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -21,7 +26,9 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 readonly class MonadicKernel implements RequestHandlerInterface
 {
-    // @todo Probably need to make the Kernel container aware and grab these directly.
+    /**
+     * @tod This gets ugly fast.
+     */
     public function __construct(
         private RoutePipe $routePipe,
         private HandleActionPipe $actionPipe,
@@ -33,6 +40,11 @@ readonly class MonadicKernel implements RequestHandlerInterface
         private ParameterConverterPipe $parameterConverterPipe,
         private JsonResultPipe $jsonResultPipe,
         private HtmlResultPipe $htmlResultPipe,
+        private AuthenticateRequestPipe $authenticateRequestPipe,
+        private AuthorizeRequest $authorizeRequest,
+        private CacheLookupPipe $cacheLookupPipe,
+        private CacheRecordPipe $cacheRecordPipe,
+        private LogRequestPipe $logRequestPipe,
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -40,15 +52,19 @@ readonly class MonadicKernel implements RequestHandlerInterface
         $pipeline = new RequestPipeline($request);
 
         $result = $pipeline
+            ->request($this->logRequestPipe)
+            ->request($this->cacheLookupPipe)
+            ->request($this->authenticateRequestPipe)
             ->request($this->deriveFormatPipe)
             ->request($this->routePipe)
+            ->request($this->authenticateRequestPipe)
             ->request($this->parameterConverterPipe)
             ->action($this->actionPipe)
             ->result('json', $this->jsonResultPipe)
             ->result('html', $this->htmlResultPipe)
+            ->response($this->cacheRecordPipe)
             ->error(NotFound::class, $this->jsonNotFoundPipe)
             ->error(NotFound::class, $this->htmlNotFoundPipe)
-//            ->result('json', $this->jsonResultPipe, ApiProblem::class)
         ;
 
         if (! $result->val instanceof ResponseInterface) {

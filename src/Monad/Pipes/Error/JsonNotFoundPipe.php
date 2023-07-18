@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Monad\Pipes;
+namespace Crell\KernelBench\Monad\Pipes\Error;
 
 use Crell\ApiProblem\ApiProblem;
 use Crell\ApiProblem\HttpConverter;
 use Crell\KernelBench\Errors\Error;
 use Crell\KernelBench\Errors\NotFound;
+use Crell\KernelBench\Monad\Pipes\ErrorPipe;
 use Crell\KernelBench\Services\Router\RequestFormat;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

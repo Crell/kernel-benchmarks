@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Monad\Pipes;
+namespace Crell\KernelBench\Monad\Pipes\Result;
 
+use Crell\KernelBench\Monad\Pipes\ResultPipe;
 use Crell\KernelBench\Services\ResponseBuilder;
 use Psr\Http\Message\ServerRequestInterface;
 

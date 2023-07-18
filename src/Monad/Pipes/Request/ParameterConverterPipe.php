@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Monad\Pipes;
+namespace Crell\KernelBench\Monad\Pipes\Request;
 
 use Crell\KernelBench\Errors\Error;
+use Crell\KernelBench\Monad\Pipes\RequestPipe;
+use Crell\KernelBench\Services\ParamConverter;
 use Crell\KernelBench\Services\Router\RouteResult;
 use Crell\KernelBench\Services\Router\RouteSuccess;
-use Crell\KernelBench\Services\ParamConverter;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
