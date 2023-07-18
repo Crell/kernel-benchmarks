@@ -8,6 +8,7 @@ use Crell\KernelBench\Documents\Product;
 use Crell\KernelBench\Events\Events\ProcessActionResult;
 use Crell\KernelBench\Services\Router\RequestFormat;
 use Crell\KernelBench\Services\Template;
+use Crell\Tukio\ListenerBefore;
 
 readonly class HtmlProductResult
 {
@@ -15,6 +16,7 @@ readonly class HtmlProductResult
         private Template $template,
     ) {}
 
+    #[ListenerBefore(HtmlStringResult::class)]
     public function __invoke(ProcessActionResult $event): void
     {
         if ($this->accepts($event)) {
