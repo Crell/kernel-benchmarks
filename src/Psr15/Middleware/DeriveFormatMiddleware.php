@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Psr15;
+namespace Crell\KernelBench\Psr15\Middleware;
 
 use Crell\KernelBench\Services\FormatDeriver;
 use Crell\KernelBench\Services\Router\RequestFormat;

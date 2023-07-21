@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Crell\KernelBench\Psr15;
+namespace Crell\KernelBench\Psr15\Middleware;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
