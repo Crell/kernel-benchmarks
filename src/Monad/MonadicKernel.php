@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Monad;
 
 use Crell\KernelBench\Errors\NotFound;
-use Crell\KernelBench\Events\Listeners\PostRouting\AuthorizeRequest;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlNotFoundPipe;
 use Crell\KernelBench\Monad\Pipes\Error\JsonNotFoundPipe;
 use Crell\KernelBench\Monad\Pipes\HandleActionPipe;
 use Crell\KernelBench\Monad\Pipes\Request\AuthenticateRequestPipe;
+use Crell\KernelBench\Monad\Pipes\Request\AuthorizeRequestPipe;
 use Crell\KernelBench\Monad\Pipes\Request\CacheLookupPipe;
 use Crell\KernelBench\Monad\Pipes\Request\DeriveFormatPipe;
 use Crell\KernelBench\Monad\Pipes\Request\LogRequestPipe;
@@ -41,7 +41,7 @@ readonly class MonadicKernel implements RequestHandlerInterface
         private JsonResultPipe $jsonResultPipe,
         private HtmlResultPipe $htmlResultPipe,
         private AuthenticateRequestPipe $authenticateRequestPipe,
-        private AuthorizeRequest $authorizeRequest,
+        private AuthorizeRequestPipe $authorizeRequestPipe,
         private CacheLookupPipe $cacheLookupPipe,
         private CacheRecordPipe $cacheRecordPipe,
         private LogRequestPipe $logRequestPipe,
@@ -57,7 +57,7 @@ readonly class MonadicKernel implements RequestHandlerInterface
             ->request($this->authenticateRequestPipe)
             ->request($this->deriveFormatPipe)
             ->request($this->routePipe)
-            ->request($this->authenticateRequestPipe)
+            ->request($this->authorizeRequestPipe)
             ->request($this->parameterConverterPipe)
             ->action($this->actionPipe)
             ->result('json', $this->jsonResultPipe)
