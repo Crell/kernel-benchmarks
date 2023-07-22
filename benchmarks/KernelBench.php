@@ -58,28 +58,28 @@ abstract class KernelBench
 
     private ServerRequestInterface $staticRouteRequest;
     private ServerRequestInterface $productGetRequest;
-    private ServerRequestInterface $productCreateRequest;
+    private ServerRequestInterface $productCreateRequestUnauthorized;
+    private ServerRequestInterface $productCreateRequestAuthenticated;
     private ServerRequestInterface $staticRouteRequestJson;
     private ServerRequestInterface $productGetRequestJson;
-    private ServerRequestInterface $productCreateRequestJson;
+    private ServerRequestInterface $productCreateRequestJsonUnauthorized;
+    private ServerRequestInterface $productCreateRequestJsonAuthenticated;
 
     public function setupRequests(): void
     {
         $this->staticRouteRequest = new ServerRequest('GET', '/static/path', ['accept' => 'text/html']);
         $this->productGetRequest = new ServerRequest('GET', '/product/1', ['accept' => 'text/html']);
-        $this->productCreateRequest = (new ServerRequest(
+        $this->productCreateRequestUnauthorized = (new ServerRequest(
             'POST',
             '/product',
             ['accept' => 'text/html', 'content-type' => 'application/json']
         ))->withBody($this->container->get(StreamFactoryInterface::class)->createStream('{"name":"Beep","color": "Blue","price": 9.99}'));
+        $this->productCreateRequestAuthenticated = $this->productCreateRequestUnauthorized->withHeader('auth', 'creator');
 
-        $this->staticRouteRequestJson = new ServerRequest('GET', '/static/path', ['accept' => 'application/json']);
-        $this->productGetRequestJson = new ServerRequest('GET', '/product/1', ['accept' => 'application/json']);
-        $this->productCreateRequestJson = (new ServerRequest(
-            'POST',
-            '/product',
-            ['accept' => 'application/json', 'content-type' => 'application/json']
-        ))->withBody($this->container->get(StreamFactoryInterface::class)->createStream('{"name":"Beep","color": "Blue","price": 9.99}'));
+        $this->staticRouteRequestJson = $this->staticRouteRequest->withHeader('accept', 'application/json');
+        $this->productGetRequestJson = $this->productGetRequest->withHeader('accept', 'application/json');
+        $this->productCreateRequestJsonUnauthorized = $this->productCreateRequestUnauthorized->withHeader('accept', 'application/json');
+        $this->productCreateRequestJsonAuthenticated = $this->productCreateRequestAuthenticated->withHeader('accept', 'application/json');
     }
 
     public function setupContainer(): void
@@ -155,7 +155,7 @@ abstract class KernelBench
     public function bench_staticroute(): void
     {
         $response = $this->getKernel()->handle($this->staticRouteRequest);
-        if ($response->getStatusCode() === 500) {
+        if ($response->getStatusCode() !== 200) {
             throw new \Exception('Response was bad.');
         }
     }
@@ -164,15 +164,23 @@ abstract class KernelBench
     {
         /** @var ResponseInterface $response */
         $response = $this->getKernel()->handle($this->productGetRequest);
-        if ($response->getStatusCode() === 500) {
+        if ($response->getStatusCode() !== 200) {
             throw new \Exception('Response was bad.');
         }
     }
 
-    public function bench_create_product(): void
+    public function bench_create_product_unauthorized(): void
     {
-        $response = $this->getKernel()->handle($this->productCreateRequest);
-        if ($response->getStatusCode() === 500) {
+        $response = $this->getKernel()->handle($this->productCreateRequestUnauthorized);
+        if ($response->getStatusCode() !== 403) {
+            throw new \Exception('Response was bad.');
+        }
+    }
+
+    public function bench_create_product_authenticated(): void
+    {
+        $response = $this->getKernel()->handle($this->productCreateRequestAuthenticated);
+        if ($response->getStatusCode() !== 201) {
             throw new \Exception('Response was bad.');
         }
     }
@@ -180,7 +188,7 @@ abstract class KernelBench
     public function bench_staticroute_json(): void
     {
         $response = $this->getKernel()->handle($this->staticRouteRequestJson);
-        if ($response->getStatusCode() === 500) {
+        if ($response->getStatusCode() !== 200) {
             throw new \Exception('Response was bad.');
         }
     }
@@ -188,15 +196,23 @@ abstract class KernelBench
     public function bench_get_product_json(): void
     {
         $response = $this->getKernel()->handle($this->productGetRequestJson);
-        if ($response->getStatusCode() === 500) {
+        if ($response->getStatusCode() !== 200) {
             throw new \Exception('Response was bad.');
         }
     }
 
-    public function bench_create_product_json(): void
+    public function bench_create_product_json_unauthorized(): void
     {
-        $response = $this->getKernel()->handle($this->productCreateRequestJson);
-        if ($response->getStatusCode() === 500) {
+        $response = $this->getKernel()->handle($this->productCreateRequestJsonUnauthorized);
+        if ($response->getStatusCode() !== 403) {
+            throw new \Exception('Response was bad.');
+        }
+    }
+
+    public function bench_create_product_json_authenticated(): void
+    {
+        $response = $this->getKernel()->handle($this->productCreateRequestJsonAuthenticated);
+        if ($response->getStatusCode() !== 201) {
             throw new \Exception('Response was bad.');
         }
     }
