@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Monad;
 
 use Crell\KernelBench\Errors\NotFound;
+use Crell\KernelBench\Errors\PermissionDenied;
+use Crell\KernelBench\Monad\Pipes\Error\HtmlForbiddenPipe;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlNotFoundPipe;
+use Crell\KernelBench\Monad\Pipes\Error\JsonForbiddenPipe;
 use Crell\KernelBench\Monad\Pipes\Error\JsonNotFoundPipe;
 use Crell\KernelBench\Monad\Pipes\HandleActionPipe;
 use Crell\KernelBench\Monad\Pipes\Request\AuthenticateRequestPipe;
@@ -45,6 +48,8 @@ readonly class MonadicKernel implements RequestHandlerInterface
         private CacheLookupPipe $cacheLookupPipe,
         private CacheRecordPipe $cacheRecordPipe,
         private LogRequestPipe $logRequestPipe,
+        private HtmlForbiddenPipe $htmlForbiddenPipe,
+        private JsonForbiddenPipe $jsonForbiddenPipe,
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -65,6 +70,8 @@ readonly class MonadicKernel implements RequestHandlerInterface
             ->response($this->cacheRecordPipe)
             ->error(NotFound::class, $this->jsonNotFoundPipe)
             ->error(NotFound::class, $this->htmlNotFoundPipe)
+            ->error(PermissionDenied::class, $this->jsonForbiddenPipe)
+            ->error(PermissionDenied::class, $this->htmlForbiddenPipe)
         ;
 
         if (! $result->val instanceof ResponseInterface) {
