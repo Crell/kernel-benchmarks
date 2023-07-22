@@ -79,6 +79,11 @@ readonly class ResponseBuilder
         return $this->createResponse(404, $body, $contentType);
     }
 
+    public function forbidden(string $body, ?string $contentType = null): ResponseInterface
+    {
+        return $this->createResponse(403, $body, $contentType);
+    }
+
     public function gone(string $body, ?string $contentType = null): ResponseInterface
     {
         return $this->createResponse(410, $body, $contentType);
