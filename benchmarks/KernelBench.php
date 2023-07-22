@@ -6,6 +6,15 @@ namespace Crell\KernelBench\Benchmarks;
 
 use Crell\KernelBench\Events\EventKernel;
 use Crell\KernelBench\Monad\MonadicKernel;
+use Crell\KernelBench\Psr15\ActionRunner;
+use Crell\KernelBench\Psr15\Middleware\AuthenticationMiddleware;
+use Crell\KernelBench\Psr15\Middleware\AuthorizationMiddleware;
+use Crell\KernelBench\Psr15\Middleware\CacheMiddleware;
+use Crell\KernelBench\Psr15\Middleware\DeriveFormatMiddleware;
+use Crell\KernelBench\Psr15\Middleware\LogMiddleware;
+use Crell\KernelBench\Psr15\Middleware\ParamConverterMiddleware;
+use Crell\KernelBench\Psr15\Middleware\RoutingMiddleware;
+use Crell\KernelBench\Psr15\StackMiddlewareKernel;
 use Crell\KernelBench\Services\ClassFinder;
 use Crell\KernelBench\Services\EventDispatcher\Provider;
 use Crell\Tukio\Dispatcher;
@@ -31,6 +40,7 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use function DI\autowire;
+use function DI\create;
 use function DI\get;
 
 /**
@@ -79,19 +89,6 @@ abstract class KernelBench
 
         $finder = new ClassFinder();
 
-        $containerBuilder->addDefinitions([
-            EventKernel::class => autowire(),
-            NullLogger::class => autowire(),
-            Dispatcher::class => autowire(),
-            Provider::class => autowire(),
-            ListenerProviderInterface::class => get(Provider::class),
-            EventDispatcherInterface::class => get(Dispatcher::class),
-            LoggerInterface::class => get(NullLogger::class),
-            ResponseFactoryInterface::class => get(Psr17Factory::class),
-            StreamFactoryInterface::class => get(Psr17Factory::class),
-            RequestFactoryInterface::class => get(Psr17Factory::class),
-            ServerRequestFactoryInterface::class => get(Psr17Factory::class),
-        ]);
         $paths = [
             './src/Services',
             './src/Events/Listeners',
@@ -106,6 +103,33 @@ abstract class KernelBench
                 ]);
             }
         }
+
+        // Manual definitions come second, so they overwrite anything auto-derived above.
+        $containerBuilder->addDefinitions([
+            StackMiddlewareKernel::class => autowire(StackMiddlewareKernel::class)
+                ->constructor(baseHandler: get(ActionRunner::class))
+                // These will run last to first, ie, the earlier listed ones are "more inner."
+                // That makes interlacing request, response, and "both" middlewares tricky.
+                ->method('addMiddleware', get(ParamConverterMiddleware::class))
+                ->method('addMiddleware', get(AuthorizationMiddleware::class))
+                ->method('addMiddleware', get(RoutingMiddleware::class))
+                ->method('addMiddleware', get(DeriveFormatMiddleware::class))
+                ->method('addMiddleware', get(AuthenticationMiddleware::class))
+                ->method('addMiddleware', get(CacheMiddleware::class))
+                ->method('addMiddleware', get(LogMiddleware::class))
+            ,
+            EventKernel::class => autowire(),
+            NullLogger::class => autowire(),
+            Dispatcher::class => autowire(),
+            Provider::class => autowire(),
+            ListenerProviderInterface::class => get(Provider::class),
+            EventDispatcherInterface::class => get(Dispatcher::class),
+            LoggerInterface::class => get(NullLogger::class),
+            ResponseFactoryInterface::class => get(Psr17Factory::class),
+            StreamFactoryInterface::class => get(Psr17Factory::class),
+            RequestFactoryInterface::class => get(Psr17Factory::class),
+            ServerRequestFactoryInterface::class => get(Psr17Factory::class),
+        ]);
 
         $this->container = $containerBuilder->build();
     }

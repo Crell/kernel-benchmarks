@@ -15,12 +15,12 @@ use Psr\Http\Server\RequestHandlerInterface;
 readonly class PassthruHandler implements RequestHandlerInterface
 {
     public function __construct(
-        private MiddlewareInterface $next,
+        private MiddlewareInterface $middleware,
+        private RequestHandlerInterface $next,
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-
+        return $this->middleware->process($request, $this->next);
     }
-
 }

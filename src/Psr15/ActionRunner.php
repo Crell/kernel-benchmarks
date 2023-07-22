@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Psr15;
 
+use Crell\KernelBench\Events\Events\ProcessActionResult;
+use Crell\KernelBench\Services\ResponseBuilder;
 use Crell\KernelBench\Services\Router\RouteResult;
 use Crell\KernelBench\Services\Router\RouteSuccess;
 use Psr\Container\ContainerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -15,6 +18,8 @@ readonly class ActionRunner implements RequestHandlerInterface
 {
     public function __construct(
         private ContainerInterface $container,
+        private EventDispatcherInterface $eventDispatcher,
+        private ResponseBuilder $responseBuilder,
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -43,8 +48,9 @@ readonly class ActionRunner implements RequestHandlerInterface
             return $result;
         }
 
-        // Unclear what to do here for a View event equivalent.
+        /** @var ProcessActionResult $event */
+        $event = $this->eventDispatcher->dispatch(new ProcessActionResult($result, $request));
 
+        return $event->getResponse() ?? $this->responseBuilder->createResponse(500, 'No matching result processor found', 'text/plain');
     }
-
 }
