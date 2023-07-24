@@ -4,8 +4,28 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Benchmarks;
 
+use Crell\KernelBench\Errors\NotFound;
+use Crell\KernelBench\Errors\PermissionDenied;
 use Crell\KernelBench\Events\EventKernel;
+use Crell\KernelBench\Events\Listeners\ProcessResult\JsonResult;
+use Crell\KernelBench\Monad\DynamicMonadicKernel;
 use Crell\KernelBench\Monad\MonadicKernel;
+use Crell\KernelBench\Monad\Pipes\ActionPipe;
+use Crell\KernelBench\Monad\Pipes\Error\HtmlForbiddenPipe;
+use Crell\KernelBench\Monad\Pipes\Error\HtmlNotFoundPipe;
+use Crell\KernelBench\Monad\Pipes\Error\JsonForbiddenPipe;
+use Crell\KernelBench\Monad\Pipes\Error\JsonNotFoundPipe;
+use Crell\KernelBench\Monad\Pipes\HandleActionPipe;
+use Crell\KernelBench\Monad\Pipes\Request\AuthenticateRequestPipe;
+use Crell\KernelBench\Monad\Pipes\Request\AuthorizeRequestPipe;
+use Crell\KernelBench\Monad\Pipes\Request\CacheLookupPipe;
+use Crell\KernelBench\Monad\Pipes\Request\DeriveFormatPipe;
+use Crell\KernelBench\Monad\Pipes\Request\LogRequestPipe;
+use Crell\KernelBench\Monad\Pipes\Request\ParameterConverterPipe;
+use Crell\KernelBench\Monad\Pipes\Request\RoutePipe;
+use Crell\KernelBench\Monad\Pipes\Response\CacheRecordPipe;
+use Crell\KernelBench\Monad\Pipes\Result\HtmlResultPipe;
+use Crell\KernelBench\Monad\Pipes\Result\JsonResultPipe;
 use Crell\KernelBench\Psr15\ActionRunner;
 use Crell\KernelBench\Psr15\Middleware\AuthenticationMiddleware;
 use Crell\KernelBench\Psr15\Middleware\AuthorizationMiddleware;
@@ -118,6 +138,23 @@ abstract class KernelBench
                 ->method('addMiddleware', get(CacheMiddleware::class))
                 ->method('addMiddleware', get(LogMiddleware::class))
             ,
+            DynamicMonadicKernel::class => autowire(DynamicMonadicKernel::class)
+                ->method('addRequestPipe', get(LogRequestPipe::class))
+                ->method('addRequestPipe', get(CacheLookupPipe::class))
+                ->method('addRequestPipe', get(AuthenticateRequestPipe::class))
+                ->method('addRequestPipe', get(DeriveFormatPipe::class))
+                ->method('addRequestPipe', get(RoutePipe::class))
+                ->method('addRequestPipe', get(AuthorizeRequestPipe::class))
+                ->method('addRequestPipe', get(ParameterConverterPipe::class))
+                ->method('addResultPipe', 'json', get(JsonResultPipe::class))
+                ->method('addResultPipe', 'html', get(HtmlResultPipe::class))
+                ->method('addResponsePipe', get(CacheRecordPipe::class))
+                ->method('addErrorPipe', NotFound::class, get(JsonNotFoundPipe::class))
+                ->method('addErrorPipe', NotFound::class, get(HtmlNotFoundPipe::class))
+                ->method('addErrorPipe', PermissionDenied::class, get(JsonForbiddenPipe::class))
+                ->method('addErrorPipe', PermissionDenied::class, get(HtmlForbiddenPipe::class))
+                ->method('setActionPipe', get(HandleActionPipe::class))
+            ,
             EventKernel::class => autowire(),
             NullLogger::class => autowire(),
             Dispatcher::class => autowire(),
@@ -144,10 +181,6 @@ abstract class KernelBench
         foreach ($finder->find('./src/Events/Listeners') as $class) {
             $provider->addSelfCallingListener($class);
         }
-    }
-
-    public function setUpMonadicKernel(): void
-    {
     }
 
     abstract public function getKernel(): object;
