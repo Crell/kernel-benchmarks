@@ -6,6 +6,7 @@ namespace Crell\KernelBench\Events;
 
 use Crell\KernelBench\Errors\Error;
 use Crell\KernelBench\Errors\NoResultHandlerFound;
+use Crell\KernelBench\Errors\NotFound;
 use Crell\KernelBench\Events\Events\HandleError;
 use Crell\KernelBench\Events\Events\HandleResponse;
 use Crell\KernelBench\Events\Events\PostRouting;
@@ -13,6 +14,7 @@ use Crell\KernelBench\Events\Events\PreRouting;
 use Crell\KernelBench\Events\Events\ProcessActionResult;
 use Crell\KernelBench\Events\Events\RoutingResult;
 use Crell\KernelBench\Services\ActionInvoker;
+use Crell\KernelBench\Services\Router\RouteNotFound;
 use Crell\KernelBench\Services\Router\Router;
 use Crell\KernelBench\Services\Router\RouteResult;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -42,6 +44,9 @@ readonly class EventKernel implements RequestHandlerInterface
 
         // This is the routing.  It's kinda hard coded, but that's OK since it's important.
         $routingResult = $this->router->route($request);
+        if ($routingResult instanceof RouteNotFound) {
+            return $this->handleError(new NotFound($request, $routingResult), $request);
+        }
         $request = $request->withAttribute(RouteResult::class, $routingResult);
 
         /** @var RoutingResult $event */

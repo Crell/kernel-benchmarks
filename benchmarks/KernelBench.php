@@ -72,6 +72,7 @@ abstract class KernelBench
 {
     protected readonly ContainerInterface $container;
 
+    private ServerRequestInterface $missingRouteRequest;
     private ServerRequestInterface $staticRouteRequest;
     private ServerRequestInterface $productGetRequest;
     private ServerRequestInterface $productCreateRequestUnauthorized;
@@ -83,6 +84,8 @@ abstract class KernelBench
 
     public function setupRequests(): void
     {
+        $this->missingRouteRequest = new ServerRequest('GET', '/does/not/exist', ['accept' => 'text/html']);
+
         $this->staticRouteRequest = new ServerRequest('GET', '/static/path', ['accept' => 'text/html']);
         $this->productGetRequest = new ServerRequest('GET', '/product/1', ['accept' => 'text/html']);
         $this->productCreateRequestUnauthorized = (new ServerRequest(
@@ -185,6 +188,15 @@ abstract class KernelBench
     {
         $response = $this->getKernel()->handle($this->staticRouteRequest);
         if ($response->getStatusCode() !== 200) {
+            throw new \Exception('Response was bad.');
+        }
+    }
+
+    public function bench_missing_route(): void
+    {
+        /** @var ResponseInterface $response */
+        $response = $this->getKernel()->handle($this->missingRouteRequest);
+        if ($response->getStatusCode() !== 404) {
             throw new \Exception('Response was bad.');
         }
     }
