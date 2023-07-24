@@ -7,10 +7,7 @@ namespace Crell\KernelBench\Benchmarks;
 use Crell\KernelBench\Errors\NotFound;
 use Crell\KernelBench\Errors\PermissionDenied;
 use Crell\KernelBench\Events\EventKernel;
-use Crell\KernelBench\Events\Listeners\ProcessResult\JsonResult;
 use Crell\KernelBench\Monad\DynamicMonadicKernel;
-use Crell\KernelBench\Monad\MonadicKernel;
-use Crell\KernelBench\Monad\Pipes\ActionPipe;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlForbiddenPipe;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlNotFoundPipe;
 use Crell\KernelBench\Monad\Pipes\Error\JsonForbiddenPipe;
@@ -60,7 +57,6 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use function DI\autowire;
-use function DI\create;
 use function DI\get;
 
 /**

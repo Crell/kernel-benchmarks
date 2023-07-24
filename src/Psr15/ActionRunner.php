@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Psr15;
 
 use Crell\KernelBench\Events\Events\ProcessActionResult;
+use Crell\KernelBench\Services\ActionInvoker;
 use Crell\KernelBench\Services\ResponseBuilder;
-use Crell\KernelBench\Services\Router\RouteResult;
-use Crell\KernelBench\Services\Router\RouteSuccess;
-use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -17,32 +15,14 @@ use Psr\Http\Server\RequestHandlerInterface;
 readonly class ActionRunner implements RequestHandlerInterface
 {
     public function __construct(
-        private ContainerInterface $container,
         private EventDispatcherInterface $eventDispatcher,
         private ResponseBuilder $responseBuilder,
+        private ActionInvoker $invoker,
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        /** @var RouteSuccess $routeResult */
-        $routeResult = $request->getAttribute(RouteResult::class);
-        $definedParams = $routeResult?->parameters;
-
-        $available = $routeResult->vars;
-
-        // Have to check the types to avoid possible name collisions.
-        foreach ($definedParams as $name => $type) {
-            if (is_a($type, ServerRequestInterface::class, true)) {
-                $available[$name] = $request;
-            } elseif (is_a($type, RouteResult::class, true)) {
-                // Not sure if this is a good one to include or not.
-                $available[$name] = $routeResult;
-            }
-        }
-
-        $args = array_intersect_key($available, $definedParams);
-
-        $result = $this->container->get($routeResult->action)(...$args);
+        $result = $this->invoker->invokeAction($request);
 
         if ($result instanceof ResponseInterface) {
             return $result;

@@ -12,10 +12,9 @@ use Crell\KernelBench\Events\Events\PostRouting;
 use Crell\KernelBench\Events\Events\PreRouting;
 use Crell\KernelBench\Events\Events\ProcessActionResult;
 use Crell\KernelBench\Events\Events\RoutingResult;
+use Crell\KernelBench\Services\ActionInvoker;
 use Crell\KernelBench\Services\Router\Router;
 use Crell\KernelBench\Services\Router\RouteResult;
-use Crell\KernelBench\Services\Router\RouteSuccess;
-use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -26,7 +25,7 @@ readonly class EventKernel implements RequestHandlerInterface
     public function __construct(
         private EventDispatcherInterface $dispatcher,
         private Router $router,
-        private ContainerInterface $container,
+        private ActionInvoker $invoker,
     ) {}
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -66,7 +65,7 @@ readonly class EventKernel implements RequestHandlerInterface
         $request = $event->request();
 
         // Call the action.
-        $result = $this->callAction($request);
+        $result = $this->invoker->invokeAction($request);
 
         if (! $result instanceof ResponseInterface) {
             /** @var ProcessActionResult $event */
@@ -89,28 +88,5 @@ readonly class EventKernel implements RequestHandlerInterface
         /** @var ProcessActionResult $event */
         $event = $this->dispatcher->dispatch(new HandleError($error, $request));
         return $event->getResponse();
-    }
-
-    private function callAction(ServerRequestInterface $request): mixed
-    {
-        /** @var RouteSuccess $routeResult */
-        $routeResult = $request->getAttribute(RouteResult::class);
-        $definedParams = $routeResult?->parameters;
-
-        $available = $routeResult->vars;
-
-        // Have to check the types to avoid possible name collisions.
-        foreach ($definedParams as $name => $type) {
-            if (is_a($type, ServerRequestInterface::class, true)) {
-                $available[$name] = $request;
-            } elseif (is_a($type, RouteResult::class, true)) {
-                // Not sure if this is a good one to include or not.
-                $available[$name] = $routeResult;
-            }
-        }
-
-        $args = array_intersect_key($available, $definedParams);
-
-        return $this->container->get($routeResult->action)(...$args);
     }
 }
