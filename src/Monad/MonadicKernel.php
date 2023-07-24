@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Monad;
 
+use Crell\KernelBench\Errors\MethodNotAllowed;
 use Crell\KernelBench\Errors\NotFound;
 use Crell\KernelBench\Errors\PermissionDenied;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlForbiddenPipe;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlNotFoundPipe;
 use Crell\KernelBench\Monad\Pipes\Error\JsonForbiddenPipe;
 use Crell\KernelBench\Monad\Pipes\Error\JsonNotFoundPipe;
+use Crell\KernelBench\Monad\Pipes\Error\MethodNotAllowedPipe;
 use Crell\KernelBench\Monad\Pipes\HandleActionPipe;
 use Crell\KernelBench\Monad\Pipes\Request\AuthenticateRequestPipe;
 use Crell\KernelBench\Monad\Pipes\Request\AuthorizeRequestPipe;
@@ -37,6 +39,7 @@ readonly class MonadicKernel implements RequestHandlerInterface
         private HandleActionPipe $actionPipe,
         private JsonNotFoundPipe $jsonNotFoundPipe,
         private HtmlNotFoundPipe $htmlNotFoundPipe,
+        private MethodNotAllowedPipe $methodNotAllowedPipe,
         private ResponseFactoryInterface $responseFactory,
         private StreamFactoryInterface $streamFactory,
         private DeriveFormatPipe $deriveFormatPipe,
@@ -68,6 +71,7 @@ readonly class MonadicKernel implements RequestHandlerInterface
             ->result('json', $this->jsonResultPipe)
             ->result('html', $this->htmlResultPipe)
             ->response($this->cacheRecordPipe)
+            ->error(MethodNotAllowed::class, $this->methodNotAllowedPipe)
             ->error(NotFound::class, $this->jsonNotFoundPipe)
             ->error(NotFound::class, $this->htmlNotFoundPipe)
             ->error(PermissionDenied::class, $this->jsonForbiddenPipe)

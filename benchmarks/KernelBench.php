@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Benchmarks;
 
+use Crell\KernelBench\Errors\MethodNotAllowed;
 use Crell\KernelBench\Errors\NotFound;
 use Crell\KernelBench\Errors\PermissionDenied;
 use Crell\KernelBench\Events\EventKernel;
@@ -12,6 +13,7 @@ use Crell\KernelBench\Monad\Pipes\Error\HtmlForbiddenPipe;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlNotFoundPipe;
 use Crell\KernelBench\Monad\Pipes\Error\JsonForbiddenPipe;
 use Crell\KernelBench\Monad\Pipes\Error\JsonNotFoundPipe;
+use Crell\KernelBench\Monad\Pipes\Error\MethodNotAllowedPipe;
 use Crell\KernelBench\Monad\Pipes\HandleActionPipe;
 use Crell\KernelBench\Monad\Pipes\Request\AuthenticateRequestPipe;
 use Crell\KernelBench\Monad\Pipes\Request\AuthorizeRequestPipe;
@@ -73,6 +75,7 @@ abstract class KernelBench
     protected readonly ContainerInterface $container;
 
     private ServerRequestInterface $missingRouteRequest;
+    private ServerRequestInterface $badFormatRequest;
     private ServerRequestInterface $staticRouteRequest;
     private ServerRequestInterface $productGetRequest;
     private ServerRequestInterface $productCreateRequestUnauthorized;
@@ -85,6 +88,7 @@ abstract class KernelBench
     public function setupRequests(): void
     {
         $this->missingRouteRequest = new ServerRequest('GET', '/does/not/exist', ['accept' => 'text/html']);
+        $this->badFormatRequest = new ServerRequest('PUT', '/static/path', ['accept' => 'text/html']);
 
         $this->staticRouteRequest = new ServerRequest('GET', '/static/path', ['accept' => 'text/html']);
         $this->productGetRequest = new ServerRequest('GET', '/product/1', ['accept' => 'text/html']);
@@ -148,6 +152,7 @@ abstract class KernelBench
                 ->method('addResultPipe', 'json', get(JsonResultPipe::class))
                 ->method('addResultPipe', 'html', get(HtmlResultPipe::class))
                 ->method('addResponsePipe', get(CacheRecordPipe::class))
+                ->method('addErrorPipe', MethodNotAllowed::class, get(MethodNotAllowedPipe::class))
                 ->method('addErrorPipe', NotFound::class, get(JsonNotFoundPipe::class))
                 ->method('addErrorPipe', NotFound::class, get(HtmlNotFoundPipe::class))
                 ->method('addErrorPipe', PermissionDenied::class, get(JsonForbiddenPipe::class))
@@ -197,6 +202,15 @@ abstract class KernelBench
         /** @var ResponseInterface $response */
         $response = $this->getKernel()->handle($this->missingRouteRequest);
         if ($response->getStatusCode() !== 404) {
+            throw new \Exception('Response was bad.');
+        }
+    }
+
+    public function bench_bad_format(): void
+    {
+        /** @var ResponseInterface $response */
+        $response = $this->getKernel()->handle($this->badFormatRequest);
+        if ($response->getStatusCode() !== 405) {
             throw new \Exception('Response was bad.');
         }
     }

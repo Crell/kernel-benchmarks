@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Events;
 
 use Crell\KernelBench\Errors\Error;
+use Crell\KernelBench\Errors\MethodNotAllowed;
 use Crell\KernelBench\Errors\NoResultHandlerFound;
 use Crell\KernelBench\Errors\NotFound;
 use Crell\KernelBench\Events\Events\HandleError;
@@ -14,6 +15,7 @@ use Crell\KernelBench\Events\Events\PreRouting;
 use Crell\KernelBench\Events\Events\ProcessActionResult;
 use Crell\KernelBench\Events\Events\RoutingResult;
 use Crell\KernelBench\Services\ActionInvoker;
+use Crell\KernelBench\Services\Router\RouteMethodNotAllowed;
 use Crell\KernelBench\Services\Router\RouteNotFound;
 use Crell\KernelBench\Services\Router\Router;
 use Crell\KernelBench\Services\Router\RouteResult;
@@ -46,6 +48,9 @@ readonly class EventKernel implements RequestHandlerInterface
         $routingResult = $this->router->route($request);
         if ($routingResult instanceof RouteNotFound) {
             return $this->handleError(new NotFound($request, $routingResult), $request);
+        }
+        if ($routingResult instanceof RouteMethodNotAllowed) {
+            return $this->handleError(new MethodNotAllowed($request, $routingResult->allowedMethods), $request);
         }
         $request = $request->withAttribute(RouteResult::class, $routingResult);
 
