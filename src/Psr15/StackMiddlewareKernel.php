@@ -9,25 +9,24 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-readonly class StackMiddlewareKernel implements RequestHandlerInterface
+class StackMiddlewareKernel implements RequestHandlerInterface
 {
-    private \SplStack $stack;
+    private RequestHandlerInterface $tip;
 
     public function __construct(
         RequestHandlerInterface $baseHandler,
     ) {
-        $this->stack = new \SplStack();
-        $this->stack->push($baseHandler);
+        $this->tip = $baseHandler;
     }
 
     public function addMiddleware(MiddlewareInterface $middleware): self
     {
-        $this->stack->push(new PassthruHandler($middleware, $this->stack->top()));
+        $this->tip = new PassthruHandler($middleware, $this->tip);
         return $this;
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        return $this->stack->top()->handle($request);
+        return $this->tip->handle($request);
     }
 }
