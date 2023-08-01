@@ -185,6 +185,10 @@ abstract class KernelBench
         foreach ($finder->find('./src/Events/Listeners') as $class) {
             $provider->addSelfCallingListener($class);
         }
+
+        foreach ($finder->find('./src/EventsException/Listeners') as $class) {
+            $provider->addSelfCallingListener($class);
+        }
     }
 
     abstract public function getKernel(): object;
