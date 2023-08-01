@@ -24,7 +24,9 @@ readonly class CacheMiddleware implements MiddlewareInterface
 
         $response = $handler->handle($request);
 
-        $this->cache->setResponseFor($request, $response);
+        if ($response->getStatusCode() === 200) {
+            $this->cache->setResponseFor($request, $response);
+        }
 
         return $response;
     }

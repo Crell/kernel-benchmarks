@@ -15,6 +15,8 @@ readonly class CacheRecord
 
     public function __invoke(HandleResponse $event): void
     {
-        $this->cache->setResponseFor($event->request, $event->getResponse());
+        if ($event->getResponse()->getStatusCode() === 200) {
+            $this->cache->setResponseFor($event->request, $event->getResponse());
+        }
     }
 }

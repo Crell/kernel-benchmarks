@@ -29,6 +29,7 @@ class RoutingResult implements StoppableEventInterface, CarriesResponse, Carries
         $this->request = $request;
         return $this;
     }
+
     public function isPropagationStopped(): bool
     {
         return isset($this->response) || isset($this->error);
