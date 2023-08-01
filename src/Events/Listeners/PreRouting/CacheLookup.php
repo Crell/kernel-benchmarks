@@ -15,9 +15,11 @@ readonly class CacheLookup
 
     public function __invoke(PreRouting $event): void
     {
-        $response = $this->cache->getResponseFor($event->request());
-        if ($response) {
-            $event->setResponse($response);
+        if (in_array(strtoupper($event->request()->getMethod()), ['GET', 'HEAD'])) {
+            $response = $this->cache->getResponseFor($event->request());
+            if ($response) {
+                $event->setResponse($response);
+            }
         }
     }
 }

@@ -18,7 +18,7 @@ class CacheRecordPipe implements ResponsePipe
 
     public function __invoke(ResponseInterface $response, ServerRequestInterface $request): ResponseInterface|Error
     {
-        if ($response->getStatusCode() === 200) {
+        if ($response->getStatusCode() === 200 && in_array(strtoupper($request->getMethod()), ['GET', 'HEAD'])) {
             $this->cache->setResponseFor($request, $response);
         }
         return $response;

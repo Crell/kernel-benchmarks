@@ -18,6 +18,10 @@ readonly class CacheMiddleware implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
+        if (!in_array(strtoupper($request->getMethod()), ['GET', 'HEAD'])) {
+            return $handler->handle($request);
+        }
+
         if ($response = $this->cache->getResponseFor($request)) {
             return $response;
         }

@@ -77,7 +77,7 @@ abstract class KernelBench
     protected readonly ContainerInterface $container;
 
     private ServerRequestInterface $missingRouteRequest;
-    private ServerRequestInterface $badFormatRequest;
+    private ServerRequestInterface $badMethodRequest;
     private ServerRequestInterface $staticRouteRequest;
     private ServerRequestInterface $productGetRequest;
     private ServerRequestInterface $productCreateRequestUnauthorized;
@@ -90,7 +90,7 @@ abstract class KernelBench
     public function setupRequests(): void
     {
         $this->missingRouteRequest = new ServerRequest('GET', '/does/not/exist', ['accept' => 'text/html']);
-        $this->badFormatRequest = new ServerRequest('PUT', '/static/path', ['accept' => 'text/html']);
+        $this->badMethodRequest = new ServerRequest('PUT', '/static/path', ['accept' => 'text/html']);
 
         $this->staticRouteRequest = new ServerRequest('GET', '/static/path', ['accept' => 'text/html']);
         $this->productGetRequest = new ServerRequest('GET', '/product/1', ['accept' => 'text/html']);
@@ -201,7 +201,7 @@ abstract class KernelBench
     {
         $response = $this->getKernel()->handle($this->staticRouteRequest);
         if ($response->getStatusCode() !== 200) {
-            throw new \Exception('Response was bad.');
+            throw new \Exception('Response was bad: ' . $response->getStatusCode());
         }
     }
 
@@ -210,25 +210,25 @@ abstract class KernelBench
         /** @var ResponseInterface $response */
         $response = $this->getKernel()->handle($this->missingRouteRequest);
         if ($response->getStatusCode() !== 404) {
-            throw new \Exception('Response was bad.');
+            throw new \Exception('Response was bad: ' . $response->getStatusCode());
         }
     }
 
-//    public function bench_bad_format(): void
-//    {
-//        /** @var ResponseInterface $response */
-//        $response = $this->getKernel()->handle($this->badFormatRequest);
-//        if ($response->getStatusCode() !== 405) {
-//            throw new \Exception('Response was bad.');
-//        }
-//    }
+    public function bench_bad_method(): void
+    {
+        /** @var ResponseInterface $response */
+        $response = $this->getKernel()->handle($this->badMethodRequest);
+        if ($response->getStatusCode() !== 405) {
+            throw new \Exception('Response was bad: ' . $response->getStatusCode());
+        }
+    }
 
     public function bench_get_product(): void
     {
         /** @var ResponseInterface $response */
         $response = $this->getKernel()->handle($this->productGetRequest);
         if ($response->getStatusCode() !== 200) {
-            throw new \Exception('Response was bad.');
+            throw new \Exception('Response was bad: ' . $response->getStatusCode());
         }
     }
 
@@ -236,7 +236,7 @@ abstract class KernelBench
     {
         $response = $this->getKernel()->handle($this->productCreateRequestUnauthorized);
         if ($response->getStatusCode() !== 403) {
-            throw new \Exception('Response was bad.');
+            throw new \Exception('Response was bad: ' . $response->getStatusCode());
         }
     }
 
@@ -244,7 +244,7 @@ abstract class KernelBench
     {
         $response = $this->getKernel()->handle($this->productCreateRequestAuthenticated);
         if ($response->getStatusCode() !== 201) {
-            throw new \Exception('Response was bad.');
+            throw new \Exception('Response was bad: ' . $response->getStatusCode());
         }
     }
 
@@ -260,7 +260,7 @@ abstract class KernelBench
     {
         $response = $this->getKernel()->handle($this->productGetRequestJson);
         if ($response->getStatusCode() !== 200) {
-            throw new \Exception('Response was bad.');
+            throw new \Exception('Response was bad: ' . $response->getStatusCode());
         }
     }
 
@@ -268,7 +268,7 @@ abstract class KernelBench
     {
         $response = $this->getKernel()->handle($this->productCreateRequestJsonUnauthorized);
         if ($response->getStatusCode() !== 403) {
-            throw new \Exception('Response was bad.');
+            throw new \Exception('Response was bad: ' . $response->getStatusCode());
         }
     }
 
@@ -276,7 +276,7 @@ abstract class KernelBench
     {
         $response = $this->getKernel()->handle($this->productCreateRequestJsonAuthenticated);
         if ($response->getStatusCode() !== 201) {
-            throw new \Exception('Response was bad.');
+            throw new \Exception('Response was bad: ' . $response->getStatusCode());
         }
     }
 

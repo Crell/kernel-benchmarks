@@ -17,6 +17,9 @@ readonly class CacheLookupPipe implements RequestPipe
 
     public function __invoke(ServerRequestInterface $request): ServerRequestInterface|ResponseInterface
     {
-        return $this->cache->getResponseFor($request) ?? $request;
+        if (in_array(strtoupper($request->getMethod()), ['GET', 'HEAD'])) {
+            return $this->cache->getResponseFor($request) ?? $request;
+        }
+        return $request;
     }
 }
