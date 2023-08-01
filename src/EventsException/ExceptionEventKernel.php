@@ -9,6 +9,7 @@ use Crell\KernelBench\Events\Events\PostRouting;
 use Crell\KernelBench\Events\Events\PreRouting;
 use Crell\KernelBench\Events\Events\ProcessActionResult;
 use Crell\KernelBench\Events\Events\RoutingResult;
+use Crell\KernelBench\EventsException\Events\ExceptionHandleResponse;
 use Crell\KernelBench\EventsException\Events\ExceptionPostRouting;
 use Crell\KernelBench\EventsException\Events\ExceptionPreRouting;
 use Crell\KernelBench\EventsException\Events\ExceptionRoutingResult;
@@ -82,7 +83,7 @@ readonly class ExceptionEventKernel implements RequestHandlerInterface
             }
 
             /** @var HandleResponse $event */
-            $event = $this->dispatcher->dispatch(new HandleResponse($result, $request));
+            $event = $this->dispatcher->dispatch(new ExceptionHandleResponse($result, $request));
 
             return $event->getResponse();
         } catch (\Exception $e) {

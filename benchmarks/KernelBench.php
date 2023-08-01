@@ -23,6 +23,7 @@ use Crell\KernelBench\Monad\Pipes\Request\LogRequestPipe;
 use Crell\KernelBench\Monad\Pipes\Request\ParameterConverterPipe;
 use Crell\KernelBench\Monad\Pipes\Request\RoutePipe;
 use Crell\KernelBench\Monad\Pipes\Response\CacheRecordPipe;
+use Crell\KernelBench\Monad\Pipes\Response\EnforceHeadPipe;
 use Crell\KernelBench\Monad\Pipes\Result\HtmlResultPipe;
 use Crell\KernelBench\Monad\Pipes\Result\JsonResultPipe;
 use Crell\KernelBench\Psr15\ActionRunner;
@@ -30,6 +31,7 @@ use Crell\KernelBench\Psr15\Middleware\AuthenticationMiddleware;
 use Crell\KernelBench\Psr15\Middleware\AuthorizationMiddleware;
 use Crell\KernelBench\Psr15\Middleware\CacheMiddleware;
 use Crell\KernelBench\Psr15\Middleware\DeriveFormatMiddleware;
+use Crell\KernelBench\Psr15\Middleware\EnforceHeadMiddleware;
 use Crell\KernelBench\Psr15\Middleware\LogMiddleware;
 use Crell\KernelBench\Psr15\Middleware\ParamConverterMiddleware;
 use Crell\KernelBench\Psr15\Middleware\RoutingMiddleware;
@@ -139,6 +141,7 @@ abstract class KernelBench
                 ->method('addMiddleware', get(DeriveFormatMiddleware::class))
                 ->method('addMiddleware', get(AuthenticationMiddleware::class))
                 ->method('addMiddleware', get(CacheMiddleware::class))
+                ->method('addMiddleware', get(EnforceHeadMiddleware::class))
                 ->method('addMiddleware', get(LogMiddleware::class))
             ,
             DynamicMonadicKernel::class => autowire(DynamicMonadicKernel::class)
@@ -152,6 +155,7 @@ abstract class KernelBench
                 ->method('addResultPipe', 'json', get(JsonResultPipe::class))
                 ->method('addResultPipe', 'html', get(HtmlResultPipe::class))
                 ->method('addResponsePipe', get(CacheRecordPipe::class))
+                ->method('addResponsePipe', get(EnforceHeadPipe::class))
                 ->method('addErrorPipe', MethodNotAllowed::class, get(MethodNotAllowedPipe::class))
                 ->method('addErrorPipe', NotFound::class, get(JsonNotFoundPipe::class))
                 ->method('addErrorPipe', NotFound::class, get(HtmlNotFoundPipe::class))
