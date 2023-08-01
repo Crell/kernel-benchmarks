@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\Services\EventDispatcher;
 
-use Crell\Tukio\Entry\ListenerEntry;
 use Crell\Tukio\ListenerAfter;
 use Crell\Tukio\ListenerBefore;
 use Crell\Tukio\ListenerPriority;

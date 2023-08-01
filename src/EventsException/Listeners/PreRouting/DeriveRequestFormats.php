@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\EventsException\Listeners\PreRouting;
 
-use Crell\KernelBench\Events\Events\PreRouting;
 use Crell\KernelBench\EventsException\Events\ExceptionPreRouting;
 use Crell\KernelBench\Services\FormatDeriver;
 use Crell\KernelBench\Services\Router\RequestFormat;

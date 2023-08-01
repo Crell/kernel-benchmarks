@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Crell\KernelBench\EventsException\Listeners\Exceptions;
 
-use Crell\KernelBench\EventsException\Exceptions\PermissionDenied;
 use Crell\KernelBench\EventsException\Events\HandleException;
+use Crell\KernelBench\EventsException\Exceptions\PermissionDenied;
 use Crell\KernelBench\Services\ResponseBuilder;
 use Crell\KernelBench\Services\Router\RequestFormat;
 use Crell\KernelBench\Services\Template;

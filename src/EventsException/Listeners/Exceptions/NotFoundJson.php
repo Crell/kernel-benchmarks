@@ -6,8 +6,8 @@ namespace Crell\KernelBench\EventsException\Listeners\Exceptions;
 
 use Crell\ApiProblem\ApiProblem;
 use Crell\ApiProblem\HttpConverter;
-use Crell\KernelBench\EventsException\Exceptions\NotFound;
 use Crell\KernelBench\EventsException\Events\HandleException;
+use Crell\KernelBench\EventsException\Exceptions\NotFound;
 use Crell\KernelBench\Services\Router\RequestFormat;
 
 readonly class NotFoundJson
