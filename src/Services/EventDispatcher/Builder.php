@@ -5,21 +5,13 @@ declare(strict_types=1);
 namespace Crell\KernelBench\Services\EventDispatcher;
 
 use Crell\Tukio\ListenerAfter;
+use Crell\Tukio\ListenerAttribute;
 use Crell\Tukio\ListenerBefore;
 use Crell\Tukio\ListenerPriority;
-use Crell\Tukio\OrderedListenerProvider;
-use Psr\Container\ContainerInterface;
+use Crell\Tukio\ProviderBuilder;
 
-class Provider extends OrderedListenerProvider
+class Builder extends ProviderBuilder
 {
-    public function __construct(ContainerInterface $container)
-    {
-        parent::__construct($container);
-    }
-
-    /**
-     * @todo All of this is a sign that Tukio needs to be cleaned up a bit.
-     */
     public function addSelfCallingListener(string $class): string
     {
         $type = $this->getParameterType([$class, '__invoke']);
@@ -47,5 +39,21 @@ class Provider extends OrderedListenerProvider
             type: $type,
             id: $class
         );
+    }
+
+    /**
+     * @return array<ListenerAttribute>
+     */
+    protected function findAttributesOnMethod(\ReflectionMethod $rMethod): array
+    {
+        // This extra dance needed to keep the code working on PHP < 8.0. It can be removed once
+        // 8.0 is made a requirement.
+        $attributes = [];
+        if (class_exists('ReflectionAttribute', false)) {
+            $attributes = array_map(static fn (\ReflectionAttribute $attrib): object
+            => $attrib->newInstance(), $rMethod->getAttributes(ListenerAttribute::class, \ReflectionAttribute::IS_INSTANCEOF));
+        }
+
+        return $attributes;
     }
 }

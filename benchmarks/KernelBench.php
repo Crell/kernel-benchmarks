@@ -8,6 +8,7 @@ use Crell\KernelBench\Errors\MethodNotAllowed;
 use Crell\KernelBench\Errors\NotFound;
 use Crell\KernelBench\Errors\PermissionDenied;
 use Crell\KernelBench\Events\EventKernel;
+use Crell\KernelBench\Events\OptimizedEventKernel;
 use Crell\KernelBench\Monad\DynamicMonadicKernel;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlForbiddenPipe;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlNotFoundPipe;
@@ -37,8 +38,10 @@ use Crell\KernelBench\Psr15\Middleware\ParamConverterMiddleware;
 use Crell\KernelBench\Psr15\Middleware\RoutingMiddleware;
 use Crell\KernelBench\Psr15\StackMiddlewareKernel;
 use Crell\KernelBench\Services\ClassFinder;
+use Crell\KernelBench\Services\EventDispatcher\Builder;
 use Crell\KernelBench\Services\EventDispatcher\Provider;
 use Crell\Tukio\Dispatcher;
+use Crell\Tukio\ProviderCompiler;
 use DI\ContainerBuilder;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7\ServerRequest;
@@ -86,6 +89,10 @@ abstract class KernelBench
     private ServerRequestInterface $productGetRequestJson;
     private ServerRequestInterface $productCreateRequestJsonUnauthorized;
     private ServerRequestInterface $productCreateRequestJsonAuthenticated;
+
+    private const CompiledProviderName = 'CompiledProvider';
+    private const CompiledProviderNamespace = 'Compiled\\Space';
+    private const OptimizedProviderName = '\\' . self::CompiledProviderNamespace . '\\' . self::CompiledProviderName;
 
     public function setupRequests(): void
     {
@@ -145,6 +152,7 @@ abstract class KernelBench
                 ->method('addMiddleware', get(LogMiddleware::class))
             ,
             DynamicMonadicKernel::class => autowire(DynamicMonadicKernel::class)
+                // These will run in the order listed within the same type.
                 ->method('addRequestPipe', get(LogRequestPipe::class))
                 ->method('addRequestPipe', get(CacheLookupPipe::class))
                 ->method('addRequestPipe', get(AuthenticateRequestPipe::class))
@@ -163,13 +171,24 @@ abstract class KernelBench
                 ->method('addErrorPipe', PermissionDenied::class, get(HtmlForbiddenPipe::class))
                 ->method('setActionPipe', get(HandleActionPipe::class))
             ,
+            OptimizedEventKernel::class => autowire()
+                ->constructorParameter('dispatcher', get("OptimizedDispatcher"))
+            ,
             EventKernel::class => autowire(),
-            NullLogger::class => autowire(),
+
+            self::OptimizedProviderName => autowire(self::OptimizedProviderName),
+            "OptimizedDispatcher" => autowire(Dispatcher::class)
+                ->constructorParameter('provider' , get(self::OptimizedProviderName))
+            ,
+
             Dispatcher::class => autowire(),
             Provider::class => autowire(),
             ListenerProviderInterface::class => get(Provider::class),
             EventDispatcherInterface::class => get(Dispatcher::class),
+
+            NullLogger::class => autowire(),
             LoggerInterface::class => get(NullLogger::class),
+
             ResponseFactoryInterface::class => get(Psr17Factory::class),
             StreamFactoryInterface::class => get(Psr17Factory::class),
             RequestFactoryInterface::class => get(Psr17Factory::class),
@@ -183,16 +202,39 @@ abstract class KernelBench
     {
         /** @var Provider $provider */
         $provider = $this->container->get(Provider::class);
-
+        $builder = new Builder();
         $finder = new ClassFinder();
 
-        foreach ($finder->find('./src/Events/Listeners') as $class) {
+        $listenerList = static function () use ($finder) {
+            yield from $finder->find('./src/Events/Listeners');
+            yield from $finder->find('./src/EventsException/Listeners');
+        };
+
+        foreach ($listenerList() as $class) {
             $provider->addSelfCallingListener($class);
+            $builder->addSelfCallingListener($class);
         }
 
-        foreach ($finder->find('./src/EventsException/Listeners') as $class) {
-            $provider->addSelfCallingListener($class);
+        $eventList = static function () use ($finder) {
+            yield from $finder->find('./src/Events/Events');
+            yield from $finder->find('./src/EventsException/Events');
+        };
+
+        $builder->optimizeEvents(...iterator_to_array($eventList(), false));
+
+        if (class_exists(self::OptimizedProviderName, false)) {
+            return;
         }
+
+        $compiler = new ProviderCompiler();
+
+        $filename = tempnam(sys_get_temp_dir(), 'compiled');
+        $out = fopen($filename, 'wb');
+        $compiler->compile($builder, $out, self::CompiledProviderName, self::CompiledProviderNamespace);
+        fclose($out);
+
+        // Now include it.  If there's a parse error PHP will throw a ParseError and PHPUnit will catch it for us.
+        include($filename);
     }
 
     abstract public function getKernel(): object;
