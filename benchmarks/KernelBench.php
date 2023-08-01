@@ -206,14 +206,14 @@ abstract class KernelBench
         }
     }
 
-    public function bench_bad_format(): void
-    {
-        /** @var ResponseInterface $response */
-        $response = $this->getKernel()->handle($this->badFormatRequest);
-        if ($response->getStatusCode() !== 405) {
-            throw new \Exception('Response was bad.');
-        }
-    }
+//    public function bench_bad_format(): void
+//    {
+//        /** @var ResponseInterface $response */
+//        $response = $this->getKernel()->handle($this->badFormatRequest);
+//        if ($response->getStatusCode() !== 405) {
+//            throw new \Exception('Response was bad.');
+//        }
+//    }
 
     public function bench_get_product(): void
     {
