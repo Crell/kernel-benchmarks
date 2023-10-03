@@ -9,6 +9,7 @@ use Crell\KernelBench\Errors\NotFound;
 use Crell\KernelBench\Errors\PermissionDenied;
 use Crell\KernelBench\Events\EventKernel;
 use Crell\KernelBench\Events\OptimizedEventKernel;
+use Crell\KernelBench\EventsException\OptimizedExceptionEventKernel;
 use Crell\KernelBench\Monad\DynamicMonadicKernel;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlForbiddenPipe;
 use Crell\KernelBench\Monad\Pipes\Error\HtmlNotFoundPipe;
@@ -175,6 +176,10 @@ abstract class KernelBench
                 ->constructorParameter('dispatcher', get("OptimizedDispatcher"))
             ,
             EventKernel::class => autowire(),
+
+            OptimizedExceptionEventKernel::class => autowire()
+                ->constructorParameter('dispatcher', get("OptimizedDispatcher"))
+            ,
 
             self::OptimizedProviderName => autowire(self::OptimizedProviderName),
             "OptimizedDispatcher" => autowire(Dispatcher::class)

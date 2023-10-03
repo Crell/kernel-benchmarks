@@ -2,16 +2,18 @@
 
 declare(strict_types=1);
 
+use Crell\KernelBench\Benchmarks\KernelBench;
 use Crell\KernelBench\Events\EventKernel;
 use Crell\KernelBench\Events\OptimizedEventKernel;
 use Crell\KernelBench\EventsException\ExceptionEventKernel;
+use Crell\KernelBench\EventsException\OptimizedExceptionEventKernel;
 use Crell\KernelBench\Monad\DynamicMonadicKernel;
 use Crell\KernelBench\Monad\MonadicKernel;
 use Crell\KernelBench\Psr15\StackMiddlewareKernel;
 
 require_once './vendor/autoload.php';
 
-class Bencher extends \Crell\KernelBench\Benchmarks\KernelBench {
+class Bencher extends KernelBench {
     public function __construct(public readonly string $kernel)
     {
         $this->setupContainer();
@@ -19,9 +21,13 @@ class Bencher extends \Crell\KernelBench\Benchmarks\KernelBench {
         $this->setupRequests();
     }
 
+    public readonly \Psr\Container\ContainerInterface $container;
+
+    private object $kernelInstance;
+
     public function getKernel(): object
     {
-        return $this->container->get($this->kernel);
+        return $this->kernelInstance ??= $this->container->get($this->kernel);
     }
 }
 
@@ -31,30 +37,17 @@ $event = new Bencher(EventKernel::class);
 $exceptionEvent = new Bencher(ExceptionEventKernel::class);
 $stack = new Bencher(StackMiddlewareKernel::class);
 $optimizedEvent = new Bencher(OptimizedEventKernel::class);
+$optimizedExceptionEvent = new Bencher(OptimizedExceptionEventKernel::class);
 
 $benchers = [
-    $dynamicMonadic,
-    $monadic,
+//    $dynamicMonadic,
+//    $monadic,
     $event,
-    $exceptionEvent,
-    $optimizedEvent,
-    $stack,
+//    $exceptionEvent,
+//    $optimizedEvent,
+//    $stack,
+//    $optimizedExceptionEvent,
 ];
-
-//$runner->bench_event_staticroute();
-//$runner->bench_event_staticroute_json();
-//$runner->bench_monad_staticroute_json();
-//$dynamicMonadic->bench_get_product();
-//$monadic->bench_get_product();
-//$event->bench_create_product_unauthorized();
-//$event->bench_bad_format();
-//$dynamicMonadic->bench_bad_format();
-//$monadic->bench_bad_format();
-//$stack->bench_bad_format();
-//$event->bench_create_product_authenticated();
-//$stack->bench_get_product();
-
-//$exceptionEvent->bench_missing_route();
 
 $methods = [
     'bench_staticroute',
@@ -69,9 +62,19 @@ $methods = [
     'bench_create_product_json_authenticated',
 ];
 
+// Load the kernels to prewarm everything out of the container.
+// That lets us skip the container cost when benchmarking.
+
+/** @var KernelBench $b */
+foreach ($benchers as $b) {
+    $b->getKernel();
+}
+
+\spx_profiler_start();
 foreach ($benchers as $bencher) {
     foreach ($methods as $method) {
-        print "$bencher->kernel: $method\n";
+        print "==========$bencher->kernel: $method\n";
         $bencher->$method();
     }
 }
+\spx_profiler_stop();
