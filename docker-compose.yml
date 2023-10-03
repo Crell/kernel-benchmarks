@@ -15,6 +15,7 @@ services:
             - ./docker/php/82/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
             - ./docker/php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
             - ./docker/php/conf.d/pcov.ini:/usr/local/etc/php/conf.d/pcov.ini
+            - ./docker/php/conf.d/spx.ini:/usr/local/etc/php/conf.d/spx.ini
         environment:
             XDEBUG_MODE: "develop,debug"
             XDEBUG_CONFIG: "client_host=${HOST_IP} idekey=${IDE_KEY} client_port=${XDEBUG_PORT} discover_client_host=1 start_with_request=1"

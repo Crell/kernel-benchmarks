@@ -13,6 +13,12 @@ services:
         XDEBUG_SESSION_START: lando-xdebug
     build_as_root:
       - rm -f /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && /etc/init.d/apache2 reload
+      - git clone https://github.com/NoiseByNorthwest/php-spx.git -b release/latest \
+        && cd php-spx  \
+        && phpize  \
+        && ./configure  \
+        && make  \
+        && make install
   database: false
 
 tooling:
