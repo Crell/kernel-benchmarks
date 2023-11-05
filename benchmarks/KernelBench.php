@@ -41,6 +41,8 @@ use Crell\KernelBench\Psr15\StackMiddlewareKernel;
 use Crell\KernelBench\Services\ClassFinder;
 use Crell\KernelBench\Services\EventDispatcher\Builder;
 use Crell\KernelBench\Services\EventDispatcher\Provider;
+use Crell\KernelBench\Services\PrintLogger;
+use Crell\Tukio\DebugEventDispatcher;
 use Crell\Tukio\Dispatcher;
 use Crell\Tukio\ProviderCompiler;
 use DI\ContainerBuilder;
@@ -187,11 +189,14 @@ abstract class KernelBench
             ,
 
             Dispatcher::class => autowire(),
+            DebugEventDispatcher::class => autowire()
+                ->constructorParameter('dispatcher', get(Dispatcher::class)),
             Provider::class => autowire(),
             ListenerProviderInterface::class => get(Provider::class),
             EventDispatcherInterface::class => get(Dispatcher::class),
 
             NullLogger::class => autowire(),
+            PrintLogger::class => autowire(),
             LoggerInterface::class => get(NullLogger::class),
 
             ResponseFactoryInterface::class => get(Psr17Factory::class),
@@ -213,6 +218,7 @@ abstract class KernelBench
         $listenerList = static function () use ($finder) {
             yield from $finder->find('./src/Events/Listeners');
             yield from $finder->find('./src/EventsException/Listeners');
+            yield from $finder->find('./src/EventsUnified/Listeners');
         };
 
         foreach ($listenerList() as $class) {
@@ -223,6 +229,7 @@ abstract class KernelBench
         $eventList = static function () use ($finder) {
             yield from $finder->find('./src/Events/Events');
             yield from $finder->find('./src/EventsException/Events');
+            yield from $finder->find('./src/EventsUnified/Events');
         };
 
         $builder->optimizeEvents(...iterator_to_array($eventList(), false));

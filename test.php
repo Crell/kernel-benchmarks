@@ -7,6 +7,7 @@ use Crell\KernelBench\Events\EventKernel;
 use Crell\KernelBench\Events\OptimizedEventKernel;
 use Crell\KernelBench\EventsException\ExceptionEventKernel;
 use Crell\KernelBench\EventsException\OptimizedExceptionEventKernel;
+use Crell\KernelBench\EventsUnified\EventUnifiedKernel;
 use Crell\KernelBench\Monad\DynamicMonadicKernel;
 use Crell\KernelBench\Monad\MonadicKernel;
 use Crell\KernelBench\Psr15\StackMiddlewareKernel;
@@ -38,15 +39,17 @@ $exceptionEvent = new Bencher(ExceptionEventKernel::class);
 $stack = new Bencher(StackMiddlewareKernel::class);
 $optimizedEvent = new Bencher(OptimizedEventKernel::class);
 $optimizedExceptionEvent = new Bencher(OptimizedExceptionEventKernel::class);
+$unifiedEvent = new Bencher(EventUnifiedKernel::class);
 
 $benchers = [
 //    $dynamicMonadic,
 //    $monadic,
-    $event,
+//    $event,
 //    $exceptionEvent,
 //    $optimizedEvent,
 //    $stack,
 //    $optimizedExceptionEvent,
+    $unifiedEvent,
 ];
 
 $methods = [
@@ -70,11 +73,11 @@ foreach ($benchers as $b) {
     $b->getKernel();
 }
 
-\spx_profiler_start();
+//\spx_profiler_start();
 foreach ($benchers as $bencher) {
     foreach ($methods as $method) {
         print "==========$bencher->kernel: $method\n";
         $bencher->$method();
     }
 }
-\spx_profiler_stop();
+//\spx_profiler_stop();
