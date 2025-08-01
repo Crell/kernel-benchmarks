@@ -12,3 +12,5 @@ RUN apt-get update && apt-get install zip unzip git zlib1g-dev -y \
     && ./configure  \
     && make  \
     && make install
+
+RUN  git config --global --add safe.directory /usr/src/myapp
